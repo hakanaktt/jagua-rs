@@ -11,7 +11,7 @@ use anyhow::{Result, anyhow};
 ///See [`compute_pole`] for details on what a 'pole' is.
 pub fn generate_surrogate_poles(
     shape: &SPolygon,
-    n_pole_limits: &[(usize, f32)],
+    n_pole_limits: &[(usize, f64)],
 ) -> Result<Vec<Circle>> {
     let mut all_poles = vec![shape.poi];
     let mut total_pole_area = shape.poi.area();
@@ -81,8 +81,8 @@ const MAX_POI_TREE_DEPTH: usize = 10;
 struct POINode {
     pub level: usize,
     pub bbox: Rect,
-    pub radius: f32,
-    pub distance: f32,
+    pub radius: f64,
+    pub distance: f64,
 }
 
 impl POINode {
@@ -101,7 +101,7 @@ impl POINode {
 
             let distance_to_border = distance_to_edges
                 .chain(distance_to_poles)
-                .fold(f32::MAX, |acc, d| acc.min(d));
+                .fold(f64::MAX, |acc, d| acc.min(d));
 
             //if the centroid is outside, distance is counted negative
             match centroid_inside {
@@ -129,7 +129,7 @@ impl POINode {
         }
     }
 
-    fn distance_upperbound(&self) -> f32 {
+    fn distance_upperbound(&self) -> f64 {
         self.radius + self.distance
     }
 }

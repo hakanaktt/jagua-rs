@@ -1,5 +1,5 @@
 use std::borrow::Borrow;
-use std::f32::consts::PI;
+use std::f64::consts::PI;
 use std::fmt::Display;
 
 use crate::geometry::Transformation;
@@ -10,13 +10,13 @@ use ordered_float::NotNan;
 /// decomposed into a rotation followed by a translation.
 pub struct DTransformation {
     /// The rotation in radians
-    pub rotation: NotNan<f32>,
+    pub rotation: NotNan<f64>,
     /// The translation in the x and y-axis
-    pub translation: (NotNan<f32>, NotNan<f32>),
+    pub translation: (NotNan<f64>, NotNan<f64>),
 }
 
 impl DTransformation {
-    pub fn new(rotation: f32, translation: (f32, f32)) -> Self {
+    pub fn new(rotation: f64, translation: (f64, f64)) -> Self {
         Self {
             rotation: NotNan::new(rotation).expect("rotation is NaN"),
             translation: (
@@ -27,18 +27,18 @@ impl DTransformation {
     }
 
     pub const fn empty() -> Self {
-        const _0: NotNan<f32> = unsafe { NotNan::new_unchecked(0.0) };
+        const _0: NotNan<f64> = unsafe { NotNan::new_unchecked(0.0) };
         Self {
             rotation: _0,
             translation: (_0, _0),
         }
     }
 
-    pub fn rotation(&self) -> f32 {
+    pub fn rotation(&self) -> f64 {
         self.rotation.into()
     }
 
-    pub fn translation(&self) -> (f32, f32) {
+    pub fn translation(&self) -> (f64, f64) {
         (self.translation.0.into(), self.translation.1.into())
     }
 
@@ -69,7 +69,7 @@ impl Display for DTransformation {
 }
 
 /// Normalizes a rotation angle to the range [0, 2π).
-pub fn normalize_rotation(r: f32) -> f32 {
+pub fn normalize_rotation(r: f64) -> f64 {
     let normalized = r % (2.0 * PI);
     if normalized < 0.0 {
         normalized + 2.0 * PI

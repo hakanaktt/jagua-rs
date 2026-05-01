@@ -157,18 +157,18 @@ impl BPProblem {
         layout_keys_changed
     }
 
-    pub fn density(&self) -> f32 {
+    pub fn density(&self) -> f64 {
         let total_bin_area = self
             .layouts
             .values()
             .map(|l| l.container.area())
-            .sum::<f32>();
+            .sum::<f64>();
 
         let total_item_area = self
             .layouts
             .values()
             .map(|l| l.placed_item_area(&self.instance))
-            .sum::<f32>();
+            .sum::<f64>();
 
         total_item_area / total_bin_area
     }

@@ -63,7 +63,7 @@ pub fn layout_to_svg_group(
     let theme = &options.theme;
 
     let stroke_width =
-        f32::min(bbox.width(), bbox.height()) * 0.001 * theme.stroke_width_multiplier;
+        f64::min(bbox.width(), bbox.height()) * 0.001 * theme.stroke_width_multiplier;
 
     let label = {
         //print some information on above the left top of the container
@@ -80,9 +80,9 @@ pub fn layout_to_svg_group(
             .set("x", bbox.x_min)
             .set(
                 "y",
-                bbox.y_min - 0.5 * 0.025 * f32::min(bbox.width(), bbox.height()),
+                bbox.y_min - 0.5 * 0.025 * f64::min(bbox.width(), bbox.height()),
             )
-            .set("font-size", f32::min(bbox.width(), bbox.height()) * 0.025)
+            .set("font-size", f64::min(bbox.width(), bbox.height()) * 0.025)
             .set("font-family", "monospace")
             .set("font-weight", "500")
     };

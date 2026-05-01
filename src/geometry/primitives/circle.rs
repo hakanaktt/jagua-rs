@@ -9,17 +9,17 @@ use crate::geometry::primitives::Rect;
 use anyhow::Result;
 use anyhow::ensure;
 use std::cmp::Ordering;
-use std::f32::consts::PI;
+use std::f64::consts::PI;
 
 /// Circle
 #[derive(Clone, Debug, PartialEq, Copy)]
 pub struct Circle {
     pub center: Point,
-    pub radius: f32,
+    pub radius: f64,
 }
 
 impl Circle {
-    pub fn try_new(center: Point, radius: f32) -> Result<Self> {
+    pub fn try_new(center: Point, radius: f64) -> Result<Self> {
         ensure!(
             radius.is_finite() && radius >= 0.0,
             "invalid circle radius: {radius}",
@@ -57,7 +57,7 @@ impl Circle {
         bounding_circle
     }
 
-    pub fn area(&self) -> f32 {
+    pub fn area(&self) -> f64 {
         self.radius * self.radius * PI
     }
 
@@ -71,7 +71,7 @@ impl Circle {
         }
     }
 
-    pub fn diameter(&self) -> f32 {
+    pub fn diameter(&self) -> f64 {
         self.radius * 2.0
     }
 }
@@ -120,8 +120,8 @@ impl CollidesWith<Rect> for Circle {
         let Point(c_x, c_y) = self.center;
 
         //x and y coordinates inside the rectangle, closest to the circle center
-        let nearest_x = f32::max(rect.x_min, f32::min(c_x, rect.x_max));
-        let nearest_y = f32::max(rect.y_min, f32::min(c_y, rect.y_max));
+        let nearest_x = f64::max(rect.x_min, f64::min(c_x, rect.x_max));
+        let nearest_y = f64::max(rect.y_min, f64::min(c_y, rect.y_max));
 
         (nearest_x - c_x).powi(2) + (nearest_y - c_y).powi(2) <= self.radius.powi(2)
     }
@@ -134,7 +134,7 @@ impl CollidesWith<Point> for Circle {
 }
 
 impl DistanceTo<Point> for Circle {
-    fn distance_to(&self, point: &Point) -> f32 {
+    fn distance_to(&self, point: &Point) -> f64 {
         let Point(x, y) = point;
         let Point(cx, cy) = self.center;
         let sq_d = (x - cx).powi(2) + (y - cy).powi(2);
@@ -142,47 +142,47 @@ impl DistanceTo<Point> for Circle {
             0.0 //point is inside circle
         } else {
             //point is outside circle
-            f32::sqrt(sq_d) - self.radius
+            f64::sqrt(sq_d) - self.radius
         }
     }
 
-    fn sq_distance_to(&self, other: &Point) -> f32 {
+    fn sq_distance_to(&self, other: &Point) -> f64 {
         self.distance_to(other).powi(2)
     }
 }
 
 impl SeparationDistance<Point> for Circle {
-    fn separation_distance(&self, point: &Point) -> (GeoPosition, f32) {
+    fn separation_distance(&self, point: &Point) -> (GeoPosition, f64) {
         let Point(x, y) = point;
         let Point(cx, cy) = self.center;
-        let d_center = f32::sqrt((x - cx).powi(2) + (y - cy).powi(2));
+        let d_center = f64::sqrt((x - cx).powi(2) + (y - cy).powi(2));
         match d_center.partial_cmp(&self.radius).unwrap() {
             Ordering::Less | Ordering::Equal => (GeoPosition::Interior, self.radius - d_center),
             Ordering::Greater => (GeoPosition::Exterior, d_center - self.radius),
         }
     }
 
-    fn sq_separation_distance(&self, point: &Point) -> (GeoPosition, f32) {
+    fn sq_separation_distance(&self, point: &Point) -> (GeoPosition, f64) {
         let (pos, distance) = self.separation_distance(point);
         (pos, distance.powi(2))
     }
 }
 
 impl DistanceTo<Circle> for Circle {
-    fn distance_to(&self, other: &Circle) -> f32 {
+    fn distance_to(&self, other: &Circle) -> f64 {
         match self.separation_distance(other) {
             (GeoPosition::Interior, _) => 0.0,
             (GeoPosition::Exterior, d) => d,
         }
     }
 
-    fn sq_distance_to(&self, other: &Circle) -> f32 {
+    fn sq_distance_to(&self, other: &Circle) -> f64 {
         self.distance_to(other).powi(2)
     }
 }
 
 impl SeparationDistance<Circle> for Circle {
-    fn separation_distance(&self, other: &Circle) -> (GeoPosition, f32) {
+    fn separation_distance(&self, other: &Circle) -> (GeoPosition, f64) {
         let sq_center_dist = self.center.sq_distance_to(&other.center);
         let sq_radii_sum = (self.radius + other.radius).powi(2);
         if sq_center_dist < sq_radii_sum {
@@ -194,27 +194,27 @@ impl SeparationDistance<Circle> for Circle {
         }
     }
 
-    fn sq_separation_distance(&self, other: &Circle) -> (GeoPosition, f32) {
+    fn sq_separation_distance(&self, other: &Circle) -> (GeoPosition, f64) {
         let (pos, distance) = self.separation_distance(other);
         (pos, distance.powi(2))
     }
 }
 
 impl DistanceTo<Edge> for Circle {
-    fn distance_to(&self, e: &Edge) -> f32 {
+    fn distance_to(&self, e: &Edge) -> f64 {
         match self.separation_distance(e) {
             (GeoPosition::Interior, _) => 0.0,
             (GeoPosition::Exterior, d) => d,
         }
     }
 
-    fn sq_distance_to(&self, e: &Edge) -> f32 {
+    fn sq_distance_to(&self, e: &Edge) -> f64 {
         self.distance_to(e).powi(2)
     }
 }
 
 impl SeparationDistance<Edge> for Circle {
-    fn separation_distance(&self, e: &Edge) -> (GeoPosition, f32) {
+    fn separation_distance(&self, e: &Edge) -> (GeoPosition, f64) {
         let distance_to_center = e.distance_to(&self.center);
         if distance_to_center < self.radius {
             (GeoPosition::Interior, self.radius - distance_to_center)
@@ -223,7 +223,7 @@ impl SeparationDistance<Edge> for Circle {
         }
     }
 
-    fn sq_separation_distance(&self, e: &Edge) -> (GeoPosition, f32) {
+    fn sq_separation_distance(&self, e: &Edge) -> (GeoPosition, f64) {
         let (pos, distance) = self.separation_distance(e);
         (pos, distance.powi(2))
     }

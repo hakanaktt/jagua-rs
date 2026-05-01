@@ -176,7 +176,7 @@ impl MSPProblem {
 
     /// Modifies the width of the strip of the layout.
     /// If the width is non-positive, the layout is removed.
-    pub fn change_strip_width(&mut self, lk: LayKey, new_width: f32) {
+    pub fn change_strip_width(&mut self, lk: LayKey, new_width: f64) {
         assert!(
             new_width > 0.0,
             "Strip width must be positive. Got: {}",
@@ -214,13 +214,13 @@ impl MSPProblem {
     }
 
     /// Computes the density of the problem as the ratio between the total area of placed items and the total area of containers.
-    pub fn density(&self) -> f32 {
-        let total_container_area = self.all_layouts().map(|l| l.container.area()).sum::<f32>();
+    pub fn density(&self) -> f64 {
+        let total_container_area = self.all_layouts().map(|l| l.container.area()).sum::<f64>();
 
         let total_item_area = self
             .all_layouts()
             .map(|l| l.placed_item_area(&self.instance))
-            .sum::<f32>();
+            .sum::<f64>();
 
         total_item_area / total_container_area
     }
@@ -238,7 +238,7 @@ impl MSPProblem {
     }
 
     /// Returns the total width of the strips of all the layouts in the problem.
-    pub fn total_strip_width(&self) -> f32 {
+    pub fn total_strip_width(&self) -> f64 {
         self.strips.iter().map(|(_, s)| s.width).sum()
     }
 

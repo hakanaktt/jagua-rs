@@ -5,7 +5,7 @@ use crate::geometry;
 use crate::geometry::OriginalShape;
 use crate::geometry::primitives::{BoundarySegment, Edge, Point, SPolygon};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use std::f32::consts::PI;
+use std::f64::consts::PI;
 use std::fmt::{Display, Formatter};
 use svg::node::element::path::Data;
 use svg::node::element::{Circle, Path};
@@ -42,12 +42,12 @@ impl Default for SvgDrawOptions {
 
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize, Copy)]
 pub struct SvgLayoutTheme {
-    pub stroke_width_multiplier: f32,
+    pub stroke_width_multiplier: f64,
     pub container_fill: Color,
     pub item_fill: Color,
     pub hole_fill: Color,
     pub qz_fill: [Color; N_QUALITIES],
-    pub qz_stroke_opac: f32,
+    pub qz_stroke_opac: f64,
     pub collision_highlight_color: Color,
 }
 
@@ -101,12 +101,12 @@ impl SvgLayoutTheme {
     };
 }
 
-pub fn change_brightness(color: Color, fraction: f32) -> Color {
+pub fn change_brightness(color: Color, fraction: f64) -> Color {
     let Color(r, g, b) = color;
 
-    let r = (r as f32 * fraction) as u8;
-    let g = (g as f32 * fraction) as u8;
-    let b = (b as f32 * fraction) as u8;
+    let r = (r as f64 * fraction) as u8;
+    let g = (g as f64 * fraction) as u8;
+    let b = (b as f64 * fraction) as u8;
     Color(r, g, b)
 }
 
@@ -115,9 +115,9 @@ pub fn blend_colors(color_1: Color, color_2: Color) -> Color {
     let Color(r_1, g_1, b_1) = color_1;
     let Color(r_2, g_2, b_2) = color_2;
 
-    let r = ((r_1 as f32 * 0.5) + (r_2 as f32 * 0.5)) as u8;
-    let g = ((g_1 as f32 * 0.5) + (g_2 as f32 * 0.5)) as u8;
-    let b = ((b_1 as f32 * 0.5) + (b_2 as f32 * 0.5)) as u8;
+    let r = ((r_1 as f64 * 0.5) + (r_2 as f64 * 0.5)) as u8;
+    let g = ((g_1 as f64 * 0.5) + (g_2 as f64 * 0.5)) as u8;
+    let b = ((b_1 as f64 * 0.5) + (b_2 as f64 * 0.5)) as u8;
 
     Color(r, g, b)
 }
@@ -180,12 +180,12 @@ pub fn original_shape_data(
 }
 
 pub fn simple_polygon_data(s_poly: &SPolygon) -> Data {
-    let mut data = Data::new().move_to::<(f32, f32)>(s_poly.vertex(0).into());
+    let mut data = Data::new().move_to::<(f64, f64)>(s_poly.vertex(0).into());
     for segment in s_poly.segment_iter() {
         data = match segment {
-            BoundarySegment::Line(edge) => data.line_to::<(f32, f32)>(edge.end.into()),
+            BoundarySegment::Line(edge) => data.line_to::<(f64, f64)>(edge.end.into()),
             BoundarySegment::Arc(arc) => data
-                .elliptical_arc_to::<(f32, f32, i32, i32, i32, f32, f32)>((
+                .elliptical_arc_to::<(f64, f64, i32, i32, i32, f64, f64)>((
                     arc.radius,
                     arc.radius,
                     0,
@@ -264,7 +264,7 @@ pub fn data_to_path(data: Data, params: &[(&str, &str)]) -> Path {
     path.set("d", data)
 }
 
-pub fn point(Point(x, y): Point, fill: Option<&str>, rad: Option<f32>) -> Circle {
+pub fn point(Point(x, y): Point, fill: Option<&str>, rad: Option<f64>) -> Circle {
     Circle::new()
         .set("cx", x)
         .set("cy", y)

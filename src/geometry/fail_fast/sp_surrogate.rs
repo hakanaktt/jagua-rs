@@ -24,7 +24,7 @@ pub struct SPSurrogate {
     /// Points that form a hull approximation for the [`SPolygon`], including extrema of arc segments.
     pub convex_hull_points: Vec<Point>,
     /// The area of the convex hull of the [`SPolygon`].
-    pub convex_hull_area: f32,
+    pub convex_hull_area: f64,
     /// The configuration used to generate the surrogate
     pub config: SPSurrogateConfig,
 }
@@ -136,7 +136,7 @@ pub struct SPSurrogateConfig {
     ///While the coverage is below 75% the generation will stop at 100 poles.
     ///If 75% coverage with 20 or more poles the generation will stop.
     ///If 90% coverage with 10 or more poles the generation will stop.
-    pub n_pole_limits: [(usize, f32); N_POLE_LIMITS],
+    pub n_pole_limits: [(usize, f64); N_POLE_LIMITS],
     ///Number of poles to test during fail-fast
     pub n_ff_poles: usize,
     ///number of piers to test during fail-fast
@@ -156,7 +156,7 @@ impl SPSurrogateConfig {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::f32::consts::PI;
+    use std::f64::consts::PI;
 
     fn rounded_top_shape() -> SPolygon {
         SPolygon::new_with_bulges(

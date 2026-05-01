@@ -14,18 +14,18 @@ pub struct BPSolution {
 }
 
 impl BPSolution {
-    pub fn density(&self, instance: &BPInstance) -> f32 {
+    pub fn density(&self, instance: &BPInstance) -> f64 {
         let total_bin_area = self
             .layout_snapshots
             .values()
             .map(|ls| ls.container.area())
-            .sum::<f32>();
+            .sum::<f64>();
 
         let total_item_area = self
             .layout_snapshots
             .values()
             .map(|ls| ls.placed_item_area(instance))
-            .sum::<f32>();
+            .sum::<f64>();
 
         total_item_area / total_bin_area
     }

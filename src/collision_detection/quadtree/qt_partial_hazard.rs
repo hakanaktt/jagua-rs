@@ -46,10 +46,10 @@ impl QTHazPartial {
             } else {
                 // Otherwise, calculate the bounding box from the segments
                 let (mut x_min, mut y_min, mut x_max, mut y_max) = (
-                    f32::INFINITY,
-                    f32::INFINITY,
-                    f32::NEG_INFINITY,
-                    f32::NEG_INFINITY,
+                    f64::INFINITY,
+                    f64::INFINITY,
+                    f64::NEG_INFINITY,
+                    f64::NEG_INFINITY,
                 );
                 for segment in &restricted_segments {
                     let bbox = segment.bbox();

@@ -19,10 +19,10 @@ impl BPInstance {
         Self { items, bins }
     }
 
-    pub fn item_area(&self) -> f32 {
+    pub fn item_area(&self) -> f64 {
         self.items
             .iter()
-            .map(|(item, qty)| item.shape_orig.area() * *qty as f32)
+            .map(|(item, qty)| item.shape_orig.area() * *qty as f64)
             .sum()
     }
 

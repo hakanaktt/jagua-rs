@@ -39,8 +39,8 @@ pub fn import_instance(importer: &Importer, ext_instance: &ExtSPInstance) -> Res
 
     let total_item_area = items
         .iter()
-        .map(|(item, demand)| item.area() * *demand as f32)
-        .sum::<f32>();
+        .map(|(item, demand)| item.area() * *demand as f64)
+        .sum::<f64>();
 
     let fixed_height = ext_instance.strip_height;
 

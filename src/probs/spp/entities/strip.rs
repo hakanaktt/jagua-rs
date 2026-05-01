@@ -8,18 +8,18 @@ use anyhow::{Result, ensure};
 #[derive(Clone, Debug, Copy, PartialEq)]
 /// Represents a rectangular container with fixed height and variable width.
 pub struct Strip {
-    pub fixed_height: f32,
+    pub fixed_height: f64,
     pub cde_config: CDEConfig,
     pub shape_modify_config: ShapeModifyConfig,
-    pub width: f32,
+    pub width: f64,
 }
 
 impl Strip {
     pub fn new(
-        fixed_height: f32,
+        fixed_height: f64,
         cde_config: CDEConfig,
         shape_modify_config: ShapeModifyConfig,
-        width: f32,
+        width: f64,
     ) -> Result<Self> {
         ensure!(fixed_height > 0.0, "strip height must be positive");
         ensure!(width > 0.0, "strip width must be positive");
@@ -31,7 +31,7 @@ impl Strip {
         })
     }
 
-    pub fn set_width(&mut self, width: f32) {
+    pub fn set_width(&mut self, width: f64) {
         assert!(width > 0.0, "strip width must be positive");
         self.width = width;
     }

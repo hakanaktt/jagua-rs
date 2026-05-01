@@ -86,9 +86,9 @@ impl Item {
     }
 
     /// Net area of the item (outer minus the area of all holes).
-    pub fn area(&self) -> f32 {
+    pub fn area(&self) -> f64 {
         let outer = self.shape_orig.area();
-        let holes: f32 = self.holes_orig.iter().map(|h| h.area()).sum();
+        let holes: f64 = self.holes_orig.iter().map(|h| h.area()).sum();
         (outer - holes).max(0.0)
     }
 }

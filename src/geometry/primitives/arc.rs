@@ -5,30 +5,30 @@ use crate::geometry::geo_traits::{
 };
 use crate::geometry::primitives::{Circle, Edge, Point, Rect};
 use anyhow::{Result, ensure};
-use std::f32::consts::{FRAC_PI_2, PI, TAU};
+use std::f64::consts::{FRAC_PI_2, PI, TAU};
 
-const ANGLE_EPSILON: f32 = 1.0e-5;
-const DISTANCE_EPSILON: f32 = 1.0e-4;
+const ANGLE_EPSILON: f64 = 1.0e-5;
+const DISTANCE_EPSILON: f64 = 1.0e-4;
 
 /// Circular arc segment between two [`Point`]s.
 #[derive(Clone, Debug, PartialEq, Copy)]
 pub struct Arc {
     pub center: Point,
-    pub radius: f32,
+    pub radius: f64,
     pub start: Point,
     pub end: Point,
     /// Signed sweep angle in radians. Positive values follow the counter-clockwise direction.
-    pub sweep: f32,
+    pub sweep: f64,
     pub bbox: Rect,
 }
 
 impl Arc {
     pub fn try_new(
         center: Point,
-        radius: f32,
+        radius: f64,
         start: Point,
         end: Point,
-        sweep: f32,
+        sweep: f64,
     ) -> Result<Self> {
         ensure!(
             radius.is_finite() && radius > 0.0,
@@ -69,7 +69,7 @@ impl Arc {
         })
     }
 
-    pub fn try_from_bulge(start: Point, end: Point, bulge: f32) -> Result<Self> {
+    pub fn try_from_bulge(start: Point, end: Point, bulge: f64) -> Result<Self> {
         ensure!(
             bulge.is_finite() && bulge != 0.0,
             "invalid arc bulge: {bulge}"
@@ -103,8 +103,8 @@ impl Arc {
 
     #[cfg(feature = "curves")]
     pub fn try_from_cavalier(
-        start: cavalier_contours::polyline::PlineVertex<f32>,
-        end: cavalier_contours::polyline::PlineVertex<f32>,
+        start: cavalier_contours::polyline::PlineVertex<f64>,
+        end: cavalier_contours::polyline::PlineVertex<f64>,
     ) -> Result<Self> {
         Self::try_from_bulge(Point(start.x, start.y), Point(end.x, end.y), start.bulge)
     }
@@ -113,8 +113,8 @@ impl Arc {
     pub fn to_cavalier_pair(
         &self,
     ) -> (
-        cavalier_contours::polyline::PlineVertex<f32>,
-        cavalier_contours::polyline::PlineVertex<f32>,
+        cavalier_contours::polyline::PlineVertex<f64>,
+        cavalier_contours::polyline::PlineVertex<f64>,
     ) {
         (
             cavalier_contours::polyline::PlineVertex::new(self.start.0, self.start.1, self.bulge()),
@@ -122,19 +122,19 @@ impl Arc {
         )
     }
 
-    pub fn bulge(&self) -> f32 {
+    pub fn bulge(&self) -> f64 {
         (self.sweep / 4.0).tan()
     }
 
-    pub fn start_angle(&self) -> f32 {
+    pub fn start_angle(&self) -> f64 {
         angle_of(self.center, self.start)
     }
 
-    pub fn end_angle(&self) -> f32 {
+    pub fn end_angle(&self) -> f64 {
         angle_of(self.center, self.end)
     }
 
-    pub fn point_at_angle(&self, angle: f32) -> Point {
+    pub fn point_at_angle(&self, angle: f64) -> Point {
         point_on_circle(self.center, self.radius, angle)
     }
 
@@ -146,7 +146,7 @@ impl Arc {
             .collect()
     }
 
-    pub fn contains_angle(&self, angle: f32) -> bool {
+    pub fn contains_angle(&self, angle: f64) -> bool {
         angle_in_sweep(angle, self.start_angle(), self.sweep)
     }
 
@@ -208,7 +208,7 @@ impl Arc {
         intersections
     }
 
-    fn push_edge_intersection(&self, edge: &Edge, t: f32, intersections: &mut Vec<Point>) {
+    fn push_edge_intersection(&self, edge: &Edge, t: f64, intersections: &mut Vec<Point>) {
         if !(-DISTANCE_EPSILON..=1.0 + DISTANCE_EPSILON).contains(&t) {
             return;
         }
@@ -353,23 +353,23 @@ impl CollidesWith<Arc> for Circle {
 }
 
 impl DistanceTo<Point> for Arc {
-    fn distance_to(&self, point: &Point) -> f32 {
+    fn distance_to(&self, point: &Point) -> f64 {
         self.sq_distance_to(point).sqrt()
     }
 
-    fn sq_distance_to(&self, point: &Point) -> f32 {
+    fn sq_distance_to(&self, point: &Point) -> f64 {
         let closest = self.closest_point_on_arc(point);
         closest.sq_distance_to(point)
     }
 }
 
 impl SeparationDistance<Point> for Arc {
-    fn separation_distance(&self, point: &Point) -> (GeoPosition, f32) {
+    fn separation_distance(&self, point: &Point) -> (GeoPosition, f64) {
         let (position, sq_distance) = self.sq_separation_distance(point);
         (position, sq_distance.sqrt())
     }
 
-    fn sq_separation_distance(&self, point: &Point) -> (GeoPosition, f32) {
+    fn sq_separation_distance(&self, point: &Point) -> (GeoPosition, f64) {
         let sq_distance = self.sq_distance_to(point);
         if self.collides_with(point) {
             (GeoPosition::Interior, sq_distance)
@@ -381,10 +381,10 @@ impl SeparationDistance<Point> for Arc {
 
 fn calculate_bounding_box(
     center: Point,
-    radius: f32,
+    radius: f64,
     start: Point,
     end: Point,
-    sweep: f32,
+    sweep: f64,
 ) -> Rect {
     let mut points = vec![start, end];
     for angle in [0.0, FRAC_PI_2, PI, 3.0 * FRAC_PI_2] {
@@ -394,10 +394,10 @@ fn calculate_bounding_box(
     }
 
     let (mut x_min, mut y_min, mut x_max, mut y_max) = (
-        f32::INFINITY,
-        f32::INFINITY,
-        f32::NEG_INFINITY,
-        f32::NEG_INFINITY,
+        f64::INFINITY,
+        f64::INFINITY,
+        f64::NEG_INFINITY,
+        f64::NEG_INFINITY,
     );
     for point in points {
         x_min = x_min.min(point.0);
@@ -414,18 +414,18 @@ fn calculate_bounding_box(
     }
 }
 
-fn point_on_circle(center: Point, radius: f32, angle: f32) -> Point {
+fn point_on_circle(center: Point, radius: f64, angle: f64) -> Point {
     Point(
         center.0 + radius * angle.cos(),
         center.1 + radius * angle.sin(),
     )
 }
 
-fn angle_of(center: Point, point: Point) -> f32 {
+fn angle_of(center: Point, point: Point) -> f64 {
     normalize_angle((point.1 - center.1).atan2(point.0 - center.0))
 }
 
-fn angle_in_sweep(angle: f32, start_angle: f32, sweep: f32) -> bool {
+fn angle_in_sweep(angle: f64, start_angle: f64, sweep: f64) -> bool {
     if sweep.abs() >= TAU - ANGLE_EPSILON {
         return true;
     }
@@ -437,7 +437,7 @@ fn angle_in_sweep(angle: f32, start_angle: f32, sweep: f32) -> bool {
     }
 }
 
-fn normalize_angle(angle: f32) -> f32 {
+fn normalize_angle(angle: f64) -> f64 {
     let normalized = angle % TAU;
     if normalized < 0.0 {
         normalized + TAU
@@ -453,8 +453,8 @@ mod tests {
     fn tessellated_edges(arc: &Arc, n_segments: usize) -> Vec<Edge> {
         (0..n_segments)
             .map(|i| {
-                let t0 = i as f32 / n_segments as f32;
-                let t1 = (i + 1) as f32 / n_segments as f32;
+                let t0 = i as f64 / n_segments as f64;
+                let t1 = (i + 1) as f64 / n_segments as f64;
                 Edge::try_new(
                     arc.point_at_angle(arc.start_angle() + arc.sweep * t0),
                     arc.point_at_angle(arc.start_angle() + arc.sweep * t1),

@@ -30,7 +30,7 @@ impl SPProblem {
     }
 
     /// Modifies the width of the strip in the back, keeping the front fixed.
-    pub fn change_strip_width(&mut self, new_width: f32) {
+    pub fn change_strip_width(&mut self, new_width: f64) {
         self.strip.set_width(new_width);
         self.layout.swap_container(self.strip.into());
     }
@@ -122,11 +122,11 @@ impl SPProblem {
         self.item_demand_qtys[item_id] += 1;
     }
 
-    pub fn density(&self) -> f32 {
+    pub fn density(&self) -> f64 {
         self.layout.density(&self.instance)
     }
 
-    pub fn strip_width(&self) -> f32 {
+    pub fn strip_width(&self) -> f64 {
         self.strip.width
     }
 

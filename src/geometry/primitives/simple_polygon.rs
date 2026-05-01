@@ -19,9 +19,9 @@ use crate::geometry::primitives::Rect;
 use crate::util::FPA;
 use anyhow::{Result, bail};
 
-const BULGE_EPSILON: f32 = 1.0e-6;
-const AREA_EPSILON: f32 = 1.0e-6;
-const POINT_EPSILON: f32 = 1.0e-5;
+const BULGE_EPSILON: f64 = 1.0e-6;
+const AREA_EPSILON: f64 = 1.0e-6;
+const POINT_EPSILON: f64 = 1.0e-5;
 
 /// A Simple Polygon is a polygon that does not intersect itself and contains no holes.
 /// It is a closed shape with a finite number of vertices and edges.
@@ -31,13 +31,13 @@ pub struct SPolygon {
     /// Set of points that form the polygon
     pub vertices: Vec<Point>,
     /// Bulge values for each boundary segment. `bulges[i]` describes the segment from `vertices[i]` to the next vertex.
-    pub bulges: Vec<f32>,
+    pub bulges: Vec<f64>,
     /// Bounding box
     pub bbox: Rect,
     /// Area of its interior
-    pub area: f32,
+    pub area: f64,
     /// Maximum distance between any two points in the polygon
-    pub diameter: f32,
+    pub diameter: f64,
     /// [Pole of inaccessibility](https://en.wikipedia.org/wiki/Pole_of_inaccessibility) represented as a circle
     pub poi: Circle,
     /// Optional surrogate representation of the polygon (subset of the original)
@@ -52,7 +52,7 @@ impl SPolygon {
     }
 
     /// Create a new simple polygon from vertices and one bulge value per outgoing boundary segment.
-    pub fn new_with_bulges(mut points: Vec<Point>, mut bulges: Vec<f32>) -> Result<Self> {
+    pub fn new_with_bulges(mut points: Vec<Point>, mut bulges: Vec<f64>) -> Result<Self> {
         if points.len() < 3 {
             bail!("Simple polygon must have at least 3 points: {points:?}");
         }
@@ -139,7 +139,7 @@ impl SPolygon {
         (0..self.n_segments()).map(move |i| self.segment(i))
     }
 
-    pub fn tessellated_edge_iter(&self, tolerance: f32) -> impl Iterator<Item = Edge> + '_ {
+    pub fn tessellated_edge_iter(&self, tolerance: f64) -> impl Iterator<Item = Edge> + '_ {
         self.segment_iter()
             .flat_map(move |segment| tessellate_segment(segment, tolerance).into_iter())
     }
@@ -165,7 +165,7 @@ impl SPolygon {
         self.surrogate.as_ref().expect("surrogate not generated")
     }
 
-    pub fn calculate_diameter(points: Vec<Point>) -> f32 {
+    pub fn calculate_diameter(points: Vec<Point>) -> f64 {
         //The two points furthest apart must be part of the convex hull
         let ch = convex_hull_from_points(points);
 
@@ -180,15 +180,15 @@ impl SPolygon {
         sq_diam.sqrt()
     }
 
-    pub fn calculate_boundary_diameter(points: &[Point], bulges: &[f32]) -> Result<f32> {
+    pub fn calculate_boundary_diameter(points: &[Point], bulges: &[f64]) -> Result<f64> {
         Ok(SPolygon::calculate_diameter(boundary_points_from_parts(
             points, bulges,
         )?))
     }
 
     pub fn generate_bounding_box(points: &[Point]) -> Rect {
-        let (mut x_min, mut y_min) = (f32::MAX, f32::MAX);
-        let (mut x_max, mut y_max) = (f32::MIN, f32::MIN);
+        let (mut x_min, mut y_min) = (f64::MAX, f64::MAX);
+        let (mut x_max, mut y_max) = (f64::MIN, f64::MIN);
 
         for point in points.iter() {
             x_min = x_min.min(point.0);
@@ -199,7 +199,7 @@ impl SPolygon {
         Rect::try_new(x_min, y_min, x_max, y_max).unwrap()
     }
 
-    pub fn generate_boundary_bounding_box(points: &[Point], bulges: &[f32]) -> Result<Rect> {
+    pub fn generate_boundary_bounding_box(points: &[Point], bulges: &[f64]) -> Result<Rect> {
         Ok(SPolygon::generate_bounding_box(
             &boundary_points_from_parts(points, bulges)?,
         ))
@@ -207,8 +207,8 @@ impl SPolygon {
 
     //https://en.wikipedia.org/wiki/Shoelace_formula
     //counterclockwise = positive area, clockwise = negative area
-    pub fn calculate_area(points: &[Point]) -> f32 {
-        let mut sigma: f32 = 0.0;
+    pub fn calculate_area(points: &[Point]) -> f64 {
+        let mut sigma: f64 = 0.0;
         for i in 0..points.len() {
             //next point
             let j = (i + 1) % points.len();
@@ -222,31 +222,31 @@ impl SPolygon {
         0.5 * sigma
     }
 
-    pub fn calculate_boundary_area(points: &[Point], bulges: &[f32]) -> Result<f32> {
+    pub fn calculate_boundary_area(points: &[Point], bulges: &[f64]) -> Result<f64> {
         let chord_area = SPolygon::calculate_area(points);
         let segment_area = arc_segments(points, bulges)?
             .into_iter()
             .map(|arc| 0.5 * arc.radius.powi(2) * (arc.sweep - arc.sweep.sin()))
-            .sum::<f32>();
+            .sum::<f64>();
         Ok(chord_area + segment_area)
     }
 
-    pub fn calculate_poi(points: &[Point], diameter: f32) -> Result<Circle> {
+    pub fn calculate_poi(points: &[Point], diameter: f64) -> Result<Circle> {
         let bulges = vec![0.0; points.len()];
         Self::calculate_poi_with_bulges(points, &bulges, diameter)
     }
 
     pub fn calculate_poi_with_bulges(
         points: &[Point],
-        bulges: &[f32],
-        diameter: f32,
+        bulges: &[f64],
+        diameter: f64,
     ) -> Result<Circle> {
         //need to make a dummy simple polygon, because the pole generation algorithm
         //relies on many of the methods provided by the simple polygon struct
         let dummy_sp = {
             let bbox = SPolygon::generate_boundary_bounding_box(points, bulges)?;
             let area = SPolygon::calculate_boundary_area(points, bulges)?;
-            let dummy_poi = Circle::try_new(Point(f32::MAX, f32::MAX), f32::MAX).unwrap();
+            let dummy_poi = Circle::try_new(Point(f64::MAX, f64::MAX), f64::MAX).unwrap();
 
             SPolygon {
                 vertices: points.to_vec(),
@@ -365,10 +365,10 @@ impl CollidesWith<Point> for SPolygon {
 }
 
 impl DistanceTo<Point> for SPolygon {
-    fn distance_to(&self, point: &Point) -> f32 {
+    fn distance_to(&self, point: &Point) -> f64 {
         self.sq_distance_to(point).sqrt()
     }
-    fn sq_distance_to(&self, point: &Point) -> f32 {
+    fn sq_distance_to(&self, point: &Point) -> f64 {
         match self.collides_with(point) {
             true => 0.0,
             false => self
@@ -381,12 +381,12 @@ impl DistanceTo<Point> for SPolygon {
 }
 
 impl SeparationDistance<Point> for SPolygon {
-    fn separation_distance(&self, point: &Point) -> (GeoPosition, f32) {
+    fn separation_distance(&self, point: &Point) -> (GeoPosition, f64) {
         let (position, sq_distance) = self.sq_separation_distance(point);
         (position, sq_distance.sqrt())
     }
 
-    fn sq_separation_distance(&self, point: &Point) -> (GeoPosition, f32) {
+    fn sq_separation_distance(&self, point: &Point) -> (GeoPosition, f64) {
         let distance_to_closest_edge = self
             .segment_iter()
             .map(|segment| segment.sq_distance_to(point))
@@ -400,7 +400,7 @@ impl SeparationDistance<Point> for SPolygon {
     }
 }
 
-fn boundary_points_from_parts(points: &[Point], bulges: &[f32]) -> Result<Vec<Point>> {
+fn boundary_points_from_parts(points: &[Point], bulges: &[f64]) -> Result<Vec<Point>> {
     let mut boundary_points = points.to_vec();
     for arc in arc_segments(points, bulges)? {
         boundary_points.extend(arc.cardinal_extrema());
@@ -408,7 +408,7 @@ fn boundary_points_from_parts(points: &[Point], bulges: &[f32]) -> Result<Vec<Po
     Ok(boundary_points)
 }
 
-fn arc_segments(points: &[Point], bulges: &[f32]) -> Result<Vec<Arc>> {
+fn arc_segments(points: &[Point], bulges: &[f64]) -> Result<Vec<Arc>> {
     validate_boundary_parts(points, bulges)?;
     let mut arcs = Vec::new();
     for i in 0..points.len() {
@@ -420,7 +420,7 @@ fn arc_segments(points: &[Point], bulges: &[f32]) -> Result<Vec<Arc>> {
     Ok(arcs)
 }
 
-fn validate_boundary_parts(points: &[Point], bulges: &[f32]) -> Result<()> {
+fn validate_boundary_parts(points: &[Point], bulges: &[f64]) -> Result<()> {
     if points.len() != bulges.len() {
         bail!(
             "Simple polygon must have one bulge per vertex: {} points, {} bulges",
@@ -431,7 +431,7 @@ fn validate_boundary_parts(points: &[Point], bulges: &[f32]) -> Result<()> {
     Ok(())
 }
 
-fn reverse_boundary(points: &mut Vec<Point>, bulges: &mut Vec<f32>) {
+fn reverse_boundary(points: &mut Vec<Point>, bulges: &mut Vec<f64>) {
     let n_points = points.len();
     let old_bulges = bulges.clone();
     points.reverse();
@@ -444,7 +444,7 @@ fn next_index(i: usize, len: usize) -> usize {
     if i == len - 1 { 0 } else { i + 1 }
 }
 
-fn calculate_boundary_centroid(points: &[Point], bulges: &[f32], area: f32) -> Point {
+fn calculate_boundary_centroid(points: &[Point], bulges: &[f64], area: f64) -> Point {
     let chord_area = SPolygon::calculate_area(points);
     let chord_centroid = calculate_chord_centroid(points, chord_area);
     let mut moment_x = chord_centroid.0 * chord_area;
@@ -474,7 +474,7 @@ fn calculate_boundary_centroid(points: &[Point], bulges: &[f32], area: f32) -> P
     Point(moment_x / area, moment_y / area)
 }
 
-fn calculate_chord_centroid(points: &[Point], area: f32) -> Point {
+fn calculate_chord_centroid(points: &[Point], area: f64) -> Point {
     if area.abs() <= AREA_EPSILON {
         return points[0];
     }
@@ -492,7 +492,7 @@ fn calculate_chord_centroid(points: &[Point], area: f32) -> Point {
     Point(c_x / (6.0 * area), c_y / (6.0 * area))
 }
 
-fn tessellate_segment(segment: BoundarySegment, tolerance: f32) -> Vec<Edge> {
+fn tessellate_segment(segment: BoundarySegment, tolerance: f64) -> Vec<Edge> {
     match segment {
         BoundarySegment::Line(edge) => vec![edge],
         BoundarySegment::Arc(arc) => {
@@ -501,8 +501,8 @@ fn tessellate_segment(segment: BoundarySegment, tolerance: f32) -> Vec<Edge> {
             let n_segments = ((arc.sweep.abs() / max_sweep).ceil() as usize).max(1);
             (0..n_segments)
                 .map(|i| {
-                    let t0 = i as f32 / n_segments as f32;
-                    let t1 = (i + 1) as f32 / n_segments as f32;
+                    let t0 = i as f64 / n_segments as f64;
+                    let t1 = (i + 1) as f64 / n_segments as f64;
                     Edge::try_new(
                         arc.point_at_angle(arc.start_angle() + arc.sweep * t0),
                         arc.point_at_angle(arc.start_angle() + arc.sweep * t1),
@@ -558,7 +558,7 @@ fn push_unique_intersection(intersections: &mut Vec<Point>, point: Point) {
 
 #[cfg(feature = "curves")]
 impl SPolygon {
-    pub fn to_cavalier_vertices(&self) -> Vec<cavalier_contours::polyline::PlineVertex<f32>> {
+    pub fn to_cavalier_vertices(&self) -> Vec<cavalier_contours::polyline::PlineVertex<f64>> {
         self.vertices
             .iter()
             .zip(&self.bulges)
@@ -572,9 +572,9 @@ impl SPolygon {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::f32::consts::PI;
+    use std::f64::consts::PI;
 
-    fn assert_close(actual: f32, expected: f32) {
+    fn assert_close(actual: f64, expected: f64) {
         assert!(
             (actual - expected).abs() < 1.0e-3,
             "actual={actual}, expected={expected}"
@@ -626,7 +626,7 @@ mod tests {
         assert_close(shape.bbox.x_max, 1.0);
         assert_close(shape.bbox.y_min, 0.0);
         assert_close(shape.bbox.y_max, 3.0);
-        assert_close(shape.diameter, 10.0_f32.sqrt());
+        assert_close(shape.diameter, 10.0_f64.sqrt());
 
         let centroid = shape.centroid();
         let semicircle_area = PI / 2.0;

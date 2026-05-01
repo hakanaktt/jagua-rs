@@ -176,11 +176,11 @@ impl CollidesWith<BoundarySegment> for Circle {
 }
 
 impl DistanceTo<Point> for BoundarySegment {
-    fn distance_to(&self, point: &Point) -> f32 {
+    fn distance_to(&self, point: &Point) -> f64 {
         self.sq_distance_to(point).sqrt()
     }
 
-    fn sq_distance_to(&self, point: &Point) -> f32 {
+    fn sq_distance_to(&self, point: &Point) -> f64 {
         match self {
             BoundarySegment::Line(edge) => edge.sq_distance_to(point),
             BoundarySegment::Arc(arc) => arc.sq_distance_to(point),
@@ -189,12 +189,12 @@ impl DistanceTo<Point> for BoundarySegment {
 }
 
 impl SeparationDistance<Point> for BoundarySegment {
-    fn separation_distance(&self, point: &Point) -> (GeoPosition, f32) {
+    fn separation_distance(&self, point: &Point) -> (GeoPosition, f64) {
         let (position, sq_distance) = self.sq_separation_distance(point);
         (position, sq_distance.sqrt())
     }
 
-    fn sq_separation_distance(&self, point: &Point) -> (GeoPosition, f32) {
+    fn sq_separation_distance(&self, point: &Point) -> (GeoPosition, f64) {
         match self {
             BoundarySegment::Line(edge) => {
                 let sq_distance = edge.sq_distance_to(point);

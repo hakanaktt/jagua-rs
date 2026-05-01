@@ -471,7 +471,7 @@ mod tests {
         SPolygon::new(points).unwrap()
     }
 
-    fn rect_query(x_min: f32, y_min: f32, x_max: f32, y_max: f32) -> SPolygon {
+    fn rect_query(x_min: f64, y_min: f64, x_max: f64, y_max: f64) -> SPolygon {
         SPolygon::from(Rect::try_new(x_min, y_min, x_max, y_max).unwrap())
     }
 

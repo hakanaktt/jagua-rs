@@ -19,24 +19,24 @@ pub struct MSPSolution {
 
 impl MSPSolution {
     /// Computes the density of the solution as the ratio between the total area of placed items and the total area of the containers.
-    pub fn density(&self, instance: &MSPInstance) -> f32 {
+    pub fn density(&self, instance: &MSPInstance) -> f64 {
         let total_container_area = self
             .strips
             .values()
             .map(|s| s.fixed_height * s.width)
-            .sum::<f32>();
+            .sum::<f64>();
 
         let total_item_area = self
             .layout_snapshots
             .values()
             .map(|ls| ls.placed_item_area(instance))
-            .sum::<f32>();
+            .sum::<f64>();
 
         total_item_area / total_container_area
     }
 
     /// Returns the total width of the strips of all the layouts in the solution.
-    pub fn total_strip_width(&self) -> f32 {
+    pub fn total_strip_width(&self) -> f64 {
         self.strips.iter().map(|(_, s)| s.width).sum()
     }
 }

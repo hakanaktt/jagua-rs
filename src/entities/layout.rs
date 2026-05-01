@@ -107,17 +107,17 @@ impl Layout {
 
     /// The current density of the layout defined as the ratio of the area of the items placed to the area of the container.
     /// Uses the original shapes of items and container to calculate the area.
-    pub fn density(&self, instance: &impl Instance) -> f32 {
+    pub fn density(&self, instance: &impl Instance) -> f64 {
         self.placed_item_area(instance) / self.container.area()
     }
 
     /// The sum of the areas of the items placed in the layout (using the original shapes of the items).
-    pub fn placed_item_area(&self, instance: &impl Instance) -> f32 {
+    pub fn placed_item_area(&self, instance: &impl Instance) -> f64 {
         self.placed_items
             .iter()
             .map(|(_, pi)| instance.item(pi.item_id))
             .map(|item| item.area())
-            .sum::<f32>()
+            .sum::<f64>()
     }
 
     /// Returns the collision detection engine for this layout
@@ -151,16 +151,16 @@ pub struct LayoutSnapshot {
 
 impl LayoutSnapshot {
     /// Equivalent to [`Layout::density`]
-    pub fn density(&self, instance: &impl Instance) -> f32 {
+    pub fn density(&self, instance: &impl Instance) -> f64 {
         self.placed_item_area(instance) / self.container.area()
     }
 
     /// Equivalent to [`Layout::placed_item_area`]
-    pub fn placed_item_area(&self, instance: &impl Instance) -> f32 {
+    pub fn placed_item_area(&self, instance: &impl Instance) -> f64 {
         self.placed_items
             .iter()
             .map(|(_, pi)| instance.item(pi.item_id))
             .map(|item| item.area())
-            .sum::<f32>()
+            .sum::<f64>()
     }
 }

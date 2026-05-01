@@ -17,19 +17,19 @@ use anyhow::{Result, bail, ensure};
 use float_cmp::approx_eq;
 use itertools::Itertools;
 use log::debug;
-use std::f32::consts::{FRAC_PI_2, PI};
+use std::f64::consts::{FRAC_PI_2, PI};
 
-const BULGE_EPSILON: f32 = 1.0e-6;
-const POINT_MATCH_EPSILON: f32 = 1.0e-4;
-const MAX_CAVALIER_SWEEP: f32 = PI;
-const MAX_EXPLICIT_ARC_SWEEP: f32 = FRAC_PI_2;
+const BULGE_EPSILON: f64 = 1.0e-6;
+const POINT_MATCH_EPSILON: f64 = 1.0e-4;
+const MAX_CAVALIER_SWEEP: f64 = PI;
+const MAX_EXPLICIT_ARC_SWEEP: f64 = FRAC_PI_2;
 
 /// Controls whether imported curved external shapes stay native or are converted to straight
 /// segments for legacy/regression benchmarking.
 #[derive(Clone, Debug, Copy, PartialEq)]
 pub enum CurvedGeometryMode {
     Native,
-    Tessellated { tolerance: f32 },
+    Tessellated { tolerance: f64 },
 }
 
 /// Converts external representations of items and containers into internal ones.
@@ -65,10 +65,10 @@ impl Importer {
     /// * `narrow_concavity_cutoff` - Optional definition for closing narrow concavities.
     pub fn new(
         cde_config: CDEConfig,
-        simplify_tolerance: Option<f32>,
-        min_item_separation: Option<f32>,
-        min_hole_separation: Option<f32>,
-        narrow_concavity_cutoff: Option<(f32, f32)>,
+        simplify_tolerance: Option<f64>,
+        min_item_separation: Option<f64>,
+        min_hole_separation: Option<f64>,
+        narrow_concavity_cutoff: Option<(f64, f64)>,
     ) -> Importer {
         Importer::new_with_separations(
             cde_config,
@@ -83,11 +83,11 @@ impl Importer {
     /// Creates a new importer with independent item-item, item-bin, and item-hole clearances.
     pub fn new_with_separations(
         cde_config: CDEConfig,
-        simplify_tolerance: Option<f32>,
-        min_item_separation: Option<f32>,
-        min_bin_separation: Option<f32>,
-        min_hole_separation: Option<f32>,
-        narrow_concavity_cutoff: Option<(f32, f32)>,
+        simplify_tolerance: Option<f64>,
+        min_item_separation: Option<f64>,
+        min_bin_separation: Option<f64>,
+        min_hole_separation: Option<f64>,
+        narrow_concavity_cutoff: Option<(f64, f64)>,
     ) -> Importer {
         let item_offset = min_item_separation.map(|sep| sep / 2.0);
         let item_offset_value = item_offset.unwrap_or(0.0);
@@ -336,7 +336,7 @@ fn apply_curved_geometry_mode(
     }
 }
 
-fn import_circle(cx: f32, cy: f32, r: f32) -> Result<SPolygon> {
+fn import_circle(cx: f64, cy: f64, r: f64) -> Result<SPolygon> {
     ensure!(
         cx.is_finite() && cy.is_finite(),
         "invalid circle center: ({cx}, {cy})"
@@ -384,7 +384,7 @@ fn import_arc_segments(arcs: &[ExtArcSeg]) -> Result<SPolygon> {
 
         let center = Point(arc.center.0, arc.center.1);
         let split_count = split_count_for_sweep(arc.sweep, MAX_EXPLICIT_ARC_SWEEP);
-        let sweep_step = arc.sweep / split_count as f32;
+        let sweep_step = arc.sweep / split_count as f64;
         let bulge = (sweep_step / 4.0).tan();
 
         let start = point_on_circle(center, arc.radius, arc.start_angle);
@@ -400,7 +400,7 @@ fn import_arc_segments(arcs: &[ExtArcSeg]) -> Result<SPolygon> {
         }
 
         for part in 0..split_count {
-            let angle = arc.start_angle + sweep_step * part as f32;
+            let angle = arc.start_angle + sweep_step * part as f64;
             points.push(point_on_circle(center, arc.radius, angle));
             bulges.push(bulge);
         }
@@ -422,7 +422,7 @@ fn import_arc_segments(arcs: &[ExtArcSeg]) -> Result<SPolygon> {
     import_boundary_parts(points, bulges)
 }
 
-fn import_bulged_vertices(vertices: Vec<(f32, f32, f32)>) -> Result<SPolygon> {
+fn import_bulged_vertices(vertices: Vec<(f64, f64, f64)>) -> Result<SPolygon> {
     let mut points = vertices.iter().map(|(x, y, _)| Point(*x, *y)).collect_vec();
     let mut bulges = vertices.iter().map(|(_, _, bulge)| *bulge).collect_vec();
 
@@ -441,7 +441,7 @@ fn import_bulged_vertices(vertices: Vec<(f32, f32, f32)>) -> Result<SPolygon> {
     import_boundary_parts(points, bulges)
 }
 
-fn import_boundary_parts(points: Vec<Point>, bulges: Vec<f32>) -> Result<SPolygon> {
+fn import_boundary_parts(points: Vec<Point>, bulges: Vec<f64>) -> Result<SPolygon> {
     let (points, bulges) = split_large_bulges(points, bulges, MAX_CAVALIER_SWEEP)?;
     let shape = SPolygon::new_with_bulges(points, bulges)?;
     ensure_no_self_intersections(&shape)?;
@@ -450,9 +450,9 @@ fn import_boundary_parts(points: Vec<Point>, bulges: Vec<f32>) -> Result<SPolygo
 
 fn split_large_bulges(
     points: Vec<Point>,
-    bulges: Vec<f32>,
-    max_sweep: f32,
-) -> Result<(Vec<Point>, Vec<f32>)> {
+    bulges: Vec<f64>,
+    max_sweep: f64,
+) -> Result<(Vec<Point>, Vec<f64>)> {
     ensure!(
         points.len() == bulges.len(),
         "one bulge is required per boundary vertex"
@@ -479,13 +479,13 @@ fn split_large_bulges(
 
         let arc = Arc::try_from_bulge(start, end, bulge)?;
         let split_count = split_count_for_sweep(arc.sweep, max_sweep);
-        let sweep_step = arc.sweep / split_count as f32;
+        let sweep_step = arc.sweep / split_count as f64;
         let split_bulge = (sweep_step / 4.0).tan();
         for part in 0..split_count {
             let point = if part == 0 {
                 start
             } else {
-                arc.point_at_angle(arc.start_angle() + sweep_step * part as f32)
+                arc.point_at_angle(arc.start_angle() + sweep_step * part as f64)
             };
             split_points.push(point);
             split_bulges.push(split_bulge);
@@ -494,7 +494,7 @@ fn split_large_bulges(
     Ok((split_points, split_bulges))
 }
 
-fn split_count_for_sweep(sweep: f32, max_sweep: f32) -> usize {
+fn split_count_for_sweep(sweep: f64, max_sweep: f64) -> usize {
     usize::max((sweep.abs() / max_sweep).ceil() as usize, 1)
 }
 
@@ -520,7 +520,7 @@ fn segments_are_adjacent(i: usize, j: usize, n_segments: usize) -> bool {
     (i + 1) % n_segments == j || (j + 1) % n_segments == i
 }
 
-fn point_on_circle(center: Point, radius: f32, angle: f32) -> Point {
+fn point_on_circle(center: Point, radius: f64, angle: f64) -> Point {
     Point(
         center.0 + radius * angle.cos(),
         center.1 + radius * angle.sin(),
@@ -528,8 +528,8 @@ fn point_on_circle(center: Point, radius: f32, angle: f32) -> Point {
 }
 
 fn points_match(a: Point, b: Point) -> bool {
-    approx_eq!(f32, a.0, b.0, epsilon = POINT_MATCH_EPSILON)
-        && approx_eq!(f32, a.1, b.1, epsilon = POINT_MATCH_EPSILON)
+    approx_eq!(f64, a.0, b.0, epsilon = POINT_MATCH_EPSILON)
+        && approx_eq!(f64, a.1, b.1, epsilon = POINT_MATCH_EPSILON)
 }
 
 /// Returns a transformation that translates the shape's centroid to the origin.
@@ -560,7 +560,7 @@ pub fn eliminate_degenerate_vertices(points: &mut Vec<Point>) {
     eliminate_degenerate_boundary_vertices(points, &mut bulges);
 }
 
-fn eliminate_degenerate_boundary_vertices(points: &mut Vec<Point>, bulges: &mut Vec<f32>) {
+fn eliminate_degenerate_boundary_vertices(points: &mut Vec<Point>, bulges: &mut Vec<f64>) {
     let mut indices_to_remove = vec![];
     let n_points = points.len();
     for i in 0..n_points {
@@ -591,9 +591,9 @@ fn eliminate_degenerate_boundary_vertices(points: &mut Vec<Point>, bulges: &mut 
 mod tests {
     use super::*;
     use crate::io::ext_repr::ExtArcSeg;
-    use std::f32::consts::PI;
+    use std::f64::consts::PI;
 
-    fn assert_close(actual: f32, expected: f32) {
+    fn assert_close(actual: f64, expected: f64) {
         assert!(
             (actual - expected).abs() < 1.0e-3,
             "actual={actual}, expected={expected}"

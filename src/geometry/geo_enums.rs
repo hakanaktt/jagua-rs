@@ -25,5 +25,5 @@ pub enum RotationRange {
     /// Complete continuous rotation allowed
     Continuous,
     /// Discrete set of rotations allowed
-    Discrete(Vec<f32>),
+    Discrete(Vec<f64>),
 }

@@ -17,9 +17,9 @@ use anyhow::{Result, bail};
 use cavalier_contours::polyline::{PlineSource, Polyline};
 
 #[cfg(feature = "curves")]
-const CAVALIER_MAX_BULGE: f32 = 1.0;
+const CAVALIER_MAX_BULGE: f64 = 1.0;
 #[cfg(feature = "curves")]
-const CAVALIER_BULGE_EPSILON: f32 = 1.0e-6;
+const CAVALIER_BULGE_EPSILON: f64 = 1.0e-6;
 
 /// Whether to strictly inflate or deflate when making any modifications to shape.
 /// Depends on the [`position`](crate::collision_detection::hazards::HazardEntity::scope) of the [`HazardEntity`](crate::collision_detection::hazards::HazardEntity) that the shape represents.
@@ -36,11 +36,11 @@ pub struct ShapeModifyConfig {
     /// Maximum deviation of the simplified polygon with respect to the original polygon area as a ratio.
     /// If undefined, no simplification is performed.
     /// See [`simplify_shape`]
-    pub simplify_tolerance: Option<f32>,
+    pub simplify_tolerance: Option<f64>,
     /// Offset by which to inflate or deflate the polygon.
     /// If undefined, no offset is applied.
     /// See [`offset_shape`]
-    pub offset: Option<f32>,
+    pub offset: Option<f64>,
     /// Definition for narrow concavities that can be closed by a straight edge.
     /// Defined as a tuple of (max_distance_ratio, max_area_ratio) where:
     /// - max_distance_ratio: maximum distance between two vertices of a polygon to consider it a narrow concavity, defined as a fraction of the item's diameter.
@@ -48,7 +48,7 @@ pub struct ShapeModifyConfig {
     ///
     /// If undefined, no narrow concavities will be closed.
     /// See [`close_narrow_concavities`]
-    pub narrow_concavity_cutoff: Option<(f32, f32)>,
+    pub narrow_concavity_cutoff: Option<(f64, f64)>,
 }
 
 /// Simplifies a [`SPolygon`] by reducing the number of edges.
@@ -59,7 +59,7 @@ pub struct ShapeModifyConfig {
 pub fn simplify_shape(
     shape: &SPolygon,
     mode: ShapeModifyMode,
-    max_area_change_ratio: f32,
+    max_area_change_ratio: f64,
 ) -> SPolygon {
     if shape.has_arcs() {
         warn!(
@@ -120,7 +120,7 @@ pub fn simplify_shape(
         let best_candidate = candidates
             .iter()
             .sorted_by_cached_key(|c| {
-                OrderedFloat(calculate_area_delta(&ref_points, c).unwrap_or(f32::INFINITY))
+                OrderedFloat(calculate_area_delta(&ref_points, c).unwrap_or(f64::INFINITY))
             })
             .find(|c| candidate_is_valid(&ref_points, c));
 
@@ -161,7 +161,7 @@ pub fn simplify_shape(
     simpl_shape
 }
 
-fn calculate_area_delta(shape: &[Point], candidate: &Candidate) -> Result<f32, InvalidCandidate> {
+fn calculate_area_delta(shape: &[Point], candidate: &Candidate) -> Result<f64, InvalidCandidate> {
     //calculate the difference in area of the shape if the candidate were to be executed
     let area = match candidate {
         Candidate::Collinear(_) => 0.0,
@@ -347,7 +347,7 @@ impl CornerType {
 
 /// Offsets a [`SPolygon`] by a certain `distance` either inwards or outwards depending on the [`ShapeModifyMode`].
 /// Straight polygons use the [`geo_offset`](https://crates.io/crates/geo_offset) crate; arc-bearing polygons use Cavalier Contours when the `curves` feature is enabled.
-pub fn offset_shape(sp: &SPolygon, mode: ShapeModifyMode, distance: f32) -> Result<SPolygon> {
+pub fn offset_shape(sp: &SPolygon, mode: ShapeModifyMode, distance: f64) -> Result<SPolygon> {
     if sp.has_arcs() {
         return offset_curved_shape(sp, mode, distance);
     }
@@ -385,7 +385,7 @@ pub fn offset_shape(sp: &SPolygon, mode: ShapeModifyMode, distance: f32) -> Resu
         geo_poly_offset
             .exterior()
             .points()
-            .map(|p| (p.x() as f32, p.y() as f32))
+            .map(|p| (p.x() as f64, p.y() as f64))
             .collect_vec(),
     );
 
@@ -393,7 +393,7 @@ pub fn offset_shape(sp: &SPolygon, mode: ShapeModifyMode, distance: f32) -> Resu
 }
 
 #[cfg(feature = "curves")]
-fn offset_curved_shape(sp: &SPolygon, mode: ShapeModifyMode, distance: f32) -> Result<SPolygon> {
+fn offset_curved_shape(sp: &SPolygon, mode: ShapeModifyMode, distance: f64) -> Result<SPolygon> {
     let offset = match mode {
         ShapeModifyMode::Deflate => distance,
         ShapeModifyMode::Inflate => -distance,
@@ -414,12 +414,12 @@ fn offset_curved_shape(sp: &SPolygon, mode: ShapeModifyMode, distance: f32) -> R
 }
 
 #[cfg(not(feature = "curves"))]
-fn offset_curved_shape(_sp: &SPolygon, _mode: ShapeModifyMode, _distance: f32) -> Result<SPolygon> {
+fn offset_curved_shape(_sp: &SPolygon, _mode: ShapeModifyMode, _distance: f64) -> Result<SPolygon> {
     bail!("Offsetting arc-bearing shapes requires the `curves` feature")
 }
 
 #[cfg(feature = "curves")]
-fn cavalier_polyline_from_spolygon(sp: &SPolygon) -> Result<Polyline<f32>> {
+fn cavalier_polyline_from_spolygon(sp: &SPolygon) -> Result<Polyline<f64>> {
     if sp
         .bulges
         .iter()
@@ -438,7 +438,7 @@ fn cavalier_polyline_from_spolygon(sp: &SPolygon) -> Result<Polyline<f32>> {
 }
 
 #[cfg(feature = "curves")]
-fn spolygon_from_cavalier_polyline(polyline: &Polyline<f32>) -> Result<SPolygon> {
+fn spolygon_from_cavalier_polyline(polyline: &Polyline<f64>) -> Result<SPolygon> {
     let mut vertices = polyline
         .vertex_data
         .iter()
@@ -462,7 +462,7 @@ fn spolygon_from_cavalier_polyline(polyline: &Polyline<f32>) -> Result<SPolygon>
 pub fn close_narrow_concavities(
     orig_shape: &SPolygon,
     mode: ShapeModifyMode,
-    (cutoff_distance_ratio, cutoff_area_ratio): (f32, f32),
+    (cutoff_distance_ratio, cutoff_area_ratio): (f64, f64),
 ) -> SPolygon {
     if orig_shape.has_arcs() {
         warn!(

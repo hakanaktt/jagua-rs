@@ -41,7 +41,7 @@ pub struct ExtBPSolution {
     /// Layouts which compose the solution
     pub layouts: Vec<ExtLayout>,
     /// Sum of the area of the produced items divided by the sum of the area of the containers
-    pub density: f32,
+    pub density: f64,
     /// The time it took to generate the solution in seconds
     pub run_time_sec: u64,
 }

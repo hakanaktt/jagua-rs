@@ -16,8 +16,8 @@ use anyhow::{Result, bail};
 static RAYS_PER_ANGLE: usize = if cfg!(debug_assertions) { 10 } else { 200 };
 static N_ANGLES: usize = if cfg!(debug_assertions) { 4 } else { 90 };
 static N_POINTS_PER_DIMENSION: usize = if cfg!(debug_assertions) { 10 } else { 100 };
-static CLIPPING_TRIM: f32 = 0.999;
-static ACTION_RADIUS_RATIO: f32 = 0.10;
+static CLIPPING_TRIM: f64 = 0.999;
+static ACTION_RADIUS_RATIO: f64 = 0.10;
 
 /// Generates a set of `n` *piers* - line segments fully contained within `shape`.
 /// This function generates them in such a way as to *cover* areas of the `shape` that are
@@ -54,7 +54,7 @@ pub fn generate_piers(shape: &SPolygon, n: usize, poles: &[Circle]) -> Result<Ve
     let mut selected_piers = Vec::new();
 
     let radius_of_ray_influence = ACTION_RADIUS_RATIO * expanded_bbox.width();
-    let forfeit_distance = f32::sqrt(bbox.width().powi(2) * bbox.height().powi(2));
+    let forfeit_distance = f64::sqrt(bbox.width().powi(2) * bbox.height().powi(2));
 
     for _ in 0..n {
         let min_distance_selected_rays = min_distances_to_rays(
@@ -99,13 +99,13 @@ fn generate_ray_transformations(
     n_angles: usize,
 ) -> Vec<Transformation> {
     //translations
-    let dx = bbox.width() / rays_per_angle as f32;
+    let dx = bbox.width() / rays_per_angle as f64;
     let translations = (0..rays_per_angle)
-        .map(|i| bbox.x_min + dx * i as f32)
+        .map(|i| bbox.x_min + dx * i as f64)
         .map(|x| Transformation::from_translation((x, 0.0)))
         .collect_vec();
 
-    let angles = Array::linspace(0.0, f32::PI(), n_angles + 1).to_vec();
+    let angles = Array::linspace(0.0, f64::PI(), n_angles + 1).to_vec();
     let angles_slice = &angles[0..n_angles]; //skip the last angle, which is the same as the first
 
     //rotate the translations by each angle
@@ -174,10 +174,10 @@ fn generate_unrepresented_point_grid(
 fn loss_function(
     new_ray: &Edge,
     point_grid: &[Point],
-    min_distance_to_rays: &[f32],
-    min_distance_to_poles: &[f32],
-    radius_of_ray_influence: f32,
-) -> f32 {
+    min_distance_to_rays: &[f64],
+    min_distance_to_poles: &[f64],
+    radius_of_ray_influence: f64,
+) -> f64 {
     //every point in the grid gets a certain score, sum of all these scores is the loss function
     //the score depends on how close it is to being "represented" by either a pole or a ray
     //rays have a certain radius of influence, outside which they don't count. Poles have no such radius
@@ -191,10 +191,10 @@ fn loss_function(
     .map(|(p, min_distance_to_existing_ray, min_distance_to_pole)| {
         let distance_to_new_ray = new_ray.distance_to(p);
 
-        let min_distance_to_ray = f32::min(*min_distance_to_existing_ray, distance_to_new_ray);
+        let min_distance_to_ray = f64::min(*min_distance_to_existing_ray, distance_to_new_ray);
 
         match min_distance_to_ray < radius_of_ray_influence {
-            true => f32::min(*min_distance_to_pole, min_distance_to_ray),
+            true => f64::min(*min_distance_to_pole, min_distance_to_ray),
             false => *min_distance_to_pole,
         }
     })
@@ -202,25 +202,25 @@ fn loss_function(
     .sum()
 }
 
-fn min_distances_to_rays(points: &[Point], rays: &[Edge], forfeit_distance: f32) -> Vec<f32> {
+fn min_distances_to_rays(points: &[Point], rays: &[Edge], forfeit_distance: f64) -> Vec<f64> {
     points
         .iter()
         .map(|p| {
             rays.iter()
                 .map(|r| r.distance_to(p))
-                .fold(forfeit_distance, f32::min)
+                .fold(forfeit_distance, f64::min)
         })
         .collect_vec()
 }
 
-fn min_distances_to_poles(points: &[Point], poles: &[Circle], forfeit_distance: f32) -> Vec<f32> {
+fn min_distances_to_poles(points: &[Point], poles: &[Circle], forfeit_distance: f64) -> Vec<f64> {
     points
         .iter()
         .map(|p| {
             poles
                 .iter()
                 .map(|c| c.distance_to(p))
-                .fold(forfeit_distance, f32::min)
+                .fold(forfeit_distance, f64::min)
         })
         .collect_vec()
 }

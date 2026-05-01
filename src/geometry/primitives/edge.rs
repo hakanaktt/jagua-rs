@@ -18,7 +18,7 @@ impl Edge {
         Ok(Edge { start, end })
     }
 
-    pub fn extend_at_front(mut self, d: f32) -> Self {
+    pub fn extend_at_front(mut self, d: f64) -> Self {
         //extend the line at the front by distance d
         let (dx, dy) = (self.end.0 - self.start.0, self.end.1 - self.start.1);
         let l = self.length();
@@ -27,7 +27,7 @@ impl Edge {
         self
     }
 
-    pub fn extend_at_back(mut self, d: f32) -> Self {
+    pub fn extend_at_back(mut self, d: f64) -> Self {
         //extend the line at the back by distance d
         let (dx, dy) = (self.end.0 - self.start.0, self.end.1 - self.start.1);
         let l = self.length();
@@ -36,7 +36,7 @@ impl Edge {
         self
     }
 
-    pub fn scale(mut self, factor: f32) -> Self {
+    pub fn scale(mut self, factor: f64) -> Self {
         let (dx, dy) = (self.end.0 - self.start.0, self.end.1 - self.start.1);
         self.start.0 -= dx * (factor - 1.0) / 2.0;
         self.start.1 -= dy * (factor - 1.0) / 2.0;
@@ -86,23 +86,23 @@ impl Edge {
         Point(xx, yy)
     }
 
-    pub fn x_min(&self) -> f32 {
-        f32::min(self.start.0, self.end.0)
+    pub fn x_min(&self) -> f64 {
+        f64::min(self.start.0, self.end.0)
     }
 
-    pub fn y_min(&self) -> f32 {
-        f32::min(self.start.1, self.end.1)
+    pub fn y_min(&self) -> f64 {
+        f64::min(self.start.1, self.end.1)
     }
 
-    pub fn x_max(&self) -> f32 {
-        f32::max(self.start.0, self.end.0)
+    pub fn x_max(&self) -> f64 {
+        f64::max(self.start.0, self.end.0)
     }
 
-    pub fn y_max(&self) -> f32 {
-        f32::max(self.start.1, self.end.1)
+    pub fn y_max(&self) -> f64 {
+        f64::max(self.start.1, self.end.1)
     }
 
-    pub fn length(&self) -> f32 {
+    pub fn length(&self) -> f64 {
         self.start.distance_to(&self.end)
     }
 
@@ -145,12 +145,12 @@ impl TransformableFrom for Edge {
 
 impl DistanceTo<Point> for Edge {
     #[inline(always)]
-    fn distance_to(&self, point: &Point) -> f32 {
-        f32::sqrt(self.sq_distance_to(point))
+    fn distance_to(&self, point: &Point) -> f64 {
+        f64::sqrt(self.sq_distance_to(point))
     }
 
     #[inline(always)]
-    fn sq_distance_to(&self, point: &Point) -> f32 {
+    fn sq_distance_to(&self, point: &Point) -> f64 {
         let Point(x, y) = point;
         let Point(xx, yy) = self.closest_point_on_edge(point);
 

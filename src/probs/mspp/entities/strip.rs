@@ -9,20 +9,20 @@ use anyhow::{Result, ensure};
 /// Represents a rectangular container with fixed height and a variable width between \]0,max_width\].
 /// Can be converted into a [`Container`] for use in layouts.
 pub struct Strip {
-    pub max_width: f32,
-    pub fixed_height: f32,
+    pub max_width: f64,
+    pub fixed_height: f64,
     pub cde_config: CDEConfig,
     pub shape_modify_config: ShapeModifyConfig,
-    pub width: f32,
+    pub width: f64,
 }
 
 impl Strip {
     pub fn new(
-        max_width: f32,
-        fixed_height: f32,
+        max_width: f64,
+        fixed_height: f64,
         cde_config: CDEConfig,
         shape_modify_config: ShapeModifyConfig,
-        width: f32,
+        width: f64,
     ) -> Result<Self> {
         ensure!(fixed_height > 0.0, "strip height must be positive");
         ensure!(max_width > 0.0, "strip maximum width must be positive");
@@ -36,7 +36,7 @@ impl Strip {
         })
     }
 
-    pub fn set_width(&mut self, width: f32) {
+    pub fn set_width(&mut self, width: f64) {
         assert!(width <= self.max_width, "strip width exceeds maximum width");
         assert!(width > 0.0, "strip width must be positive");
         self.width = width;

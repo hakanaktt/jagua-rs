@@ -60,6 +60,6 @@ fn grow_convex_hull(mut h: Vec<Point>, next: Point) -> Vec<Point> {
     h
 }
 
-fn cross(a: Point, b: Point, c: Point) -> f32 {
+fn cross(a: Point, b: Point, c: Point) -> f64 {
     (b.0 - a.0) * (c.1 - a.1) - (b.1 - a.1) * (c.0 - a.0)
 }

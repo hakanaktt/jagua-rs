@@ -18,20 +18,20 @@ pub trait AlmostCollidesWith<T> {
 /// Trait for types that can compute the minimum distance between `self` and `other` of type `T`.
 pub trait DistanceTo<T> {
     /// Minimum distance between two primitives. Will be 0 in case of a collision.
-    fn distance_to(&self, other: &T) -> f32;
+    fn distance_to(&self, other: &T) -> f64;
 
     /// Squared version of [DistanceTo::distance_to]
-    fn sq_distance_to(&self, other: &T) -> f32;
+    fn sq_distance_to(&self, other: &T) -> f64;
 }
 
 /// Trait for types that can compute the minimum distance to separate `self` from `other` of type `T`.
 pub trait SeparationDistance<T>: DistanceTo<T> {
     /// In case of a collision between `self` and `other`, returns [GeoPosition::Interior] and the minimum distance to separate the two primitives.
     /// Otherwise, returns [GeoPosition::Exterior] and the minimum distance between the two primitives. (similar to [DistanceTo::distance_to])
-    fn separation_distance(&self, other: &T) -> (GeoPosition, f32);
+    fn separation_distance(&self, other: &T) -> (GeoPosition, f64);
 
     /// Squared version of [SeparationDistance::separation_distance]
-    fn sq_separation_distance(&self, other: &T) -> (GeoPosition, f32);
+    fn sq_separation_distance(&self, other: &T) -> (GeoPosition, f64);
 }
 
 /// Trait for types that can modify themselves by a [`Transformation`].

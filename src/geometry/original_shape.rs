@@ -63,7 +63,7 @@ impl OriginalShape {
         self.shape.centroid()
     }
 
-    pub fn area(&self) -> f32 {
+    pub fn area(&self) -> f64 {
         self.shape.area
     }
 
@@ -71,7 +71,7 @@ impl OriginalShape {
         self.shape.bbox
     }
 
-    pub fn diameter(&self) -> f32 {
+    pub fn diameter(&self) -> f64 {
         self.shape.diameter
     }
 }

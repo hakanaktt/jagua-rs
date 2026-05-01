@@ -9,7 +9,7 @@ pub struct ExtItem {
     /// List of allowed orientations angles (in degrees).
     /// Continuous rotation if not specified
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub allowed_orientations: Option<Vec<f32>>,
+    pub allowed_orientations: Option<Vec<f64>>,
     /// Shape of the item
     pub shape: ExtShape,
     /// The minimum required quality of the item.
@@ -37,13 +37,13 @@ pub struct ExtContainer {
 pub enum ExtShape {
     /// Axis-aligned rectangle. With its left bottom corner at (x_min, y_min), a width and height
     Rectangle {
-        x_min: f32,
-        y_min: f32,
-        width: f32,
-        height: f32,
+        x_min: f64,
+        y_min: f64,
+        width: f64,
+        height: f64,
     },
     /// Circle represented by its center and radius. Imported as four exact quarter-arc segments.
-    Circle { cx: f32, cy: f32, r: f32 },
+    Circle { cx: f64, cy: f64, r: f64 },
     /// Polygon with a single outer boundary
     SimplePolygon(ExtSPolygon),
     /// Polygon with bulge values attached to each outgoing boundary segment.
@@ -69,21 +69,21 @@ pub struct ExtPolygon {
 /// External representation of a [`SPolygon`](crate::geometry::primitives::SPolygon).
 /// A polygon with no holes and no self-intersections.
 #[derive(Serialize, Deserialize, Clone)]
-pub struct ExtSPolygon(pub Vec<(f32, f32)>);
+pub struct ExtSPolygon(pub Vec<(f64, f64)>);
 
 /// External representation of a bulged polygon.
 /// Each tuple is `(x, y, bulge_to_next)`, where `bulge = tan(sweep / 4)`.
 #[derive(Serialize, Deserialize, Clone)]
-pub struct ExtBulgedPolygon(pub Vec<(f32, f32, f32)>);
+pub struct ExtBulgedPolygon(pub Vec<(f64, f64, f64)>);
 
 /// External representation of one circular arc in a closed all-arc boundary.
 /// Angles are radians. Positive sweep is counter-clockwise; negative sweep is clockwise.
 #[derive(Serialize, Deserialize, Clone)]
 pub struct ExtArcSeg {
-    pub center: (f32, f32),
-    pub radius: f32,
-    pub start_angle: f32,
-    pub sweep: f32,
+    pub center: (f64, f64),
+    pub radius: f64,
+    pub start_angle: f64,
+    pub sweep: f64,
 }
 
 /// A zone with a specific quality level
@@ -104,7 +104,7 @@ pub struct ExtLayout {
     /// The items placed in the container and where they were placed
     pub placed_items: Vec<ExtPlacedItem>,
     /// Some statistics about the layout
-    pub density: f32,
+    pub density: f64,
 }
 
 /// External representation of a [`PlacedItem`](crate::entities::PlacedItem).
@@ -121,9 +121,9 @@ pub struct ExtPlacedItem {
 #[derive(Serialize, Deserialize, Clone)]
 pub struct ExtTransformation {
     /// The rotation angle in degrees
-    pub rotation: f32,
+    pub rotation: f64,
     /// The translation vector (x, y)
-    pub translation: (f32, f32),
+    pub translation: (f64, f64),
 }
 
 impl From<DTransformation> for ExtTransformation {

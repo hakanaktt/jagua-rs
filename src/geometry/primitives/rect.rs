@@ -12,14 +12,14 @@ use ordered_float::OrderedFloat;
 ///Axis-aligned rectangle
 #[derive(Clone, Debug, PartialEq, Copy)]
 pub struct Rect {
-    pub x_min: f32,
-    pub y_min: f32,
-    pub x_max: f32,
-    pub y_max: f32,
+    pub x_min: f64,
+    pub y_min: f64,
+    pub x_max: f64,
+    pub y_max: f64,
 }
 
 impl Rect {
-    pub fn try_new(x_min: f32, y_min: f32, x_max: f32, y_max: f32) -> Result<Self> {
+    pub fn try_new(x_min: f64, y_min: f64, x_max: f64, y_max: f64) -> Result<Self> {
         ensure!(
             x_min < x_max && y_min < y_max,
             "invalid rectangle, x_min: {x_min}, x_max: {x_max}, y_min: {y_min}, y_max: {y_max}"
@@ -33,10 +33,10 @@ impl Rect {
     }
 
     pub fn from_diagonal_corners(c1: Point, c2: Point) -> Result<Self> {
-        let x_min = f32::min(c1.x(), c2.x());
-        let y_min = f32::min(c1.y(), c2.y());
-        let x_max = f32::max(c1.x(), c2.x());
-        let y_max = f32::max(c1.y(), c2.y());
+        let x_min = f64::min(c1.x(), c2.x());
+        let y_min = f64::min(c1.y(), c2.y());
+        let x_max = f64::max(c1.x(), c2.x());
+        let y_max = f64::max(c1.y(), c2.y());
         Rect::try_new(x_min, y_min, x_max, y_max)
     }
 
@@ -109,7 +109,7 @@ impl Rect {
     }
 
     /// Returns a new rectangle with the same centroid but scaled by `factor`.
-    pub fn scale(self, factor: f32) -> Self {
+    pub fn scale(self, factor: f64) -> Self {
         let dx = (self.x_max - self.x_min) * (factor - 1.0) / 2.0;
         let dy = (self.y_max - self.y_min) * (factor - 1.0) / 2.0;
         self.resize_by(dx, dy)
@@ -118,7 +118,7 @@ impl Rect {
 
     /// Returns a new rectangle with the same centroid as `self` but expanded by `dx` in both x-directions and by `dy` in both y-directions.
     /// If the new rectangle is invalid (x_min >= x_max or y_min >= y_max), returns None.
-    pub fn resize_by(mut self, dx: f32, dy: f32) -> Option<Self> {
+    pub fn resize_by(mut self, dx: f64, dy: f64) -> Option<Self> {
         self.x_min -= dx;
         self.y_min -= dy;
         self.x_max += dx;
@@ -205,20 +205,20 @@ impl Rect {
             },
         ]
     }
-    pub fn width(&self) -> f32 {
+    pub fn width(&self) -> f64 {
         self.x_max - self.x_min
     }
 
-    pub fn height(&self) -> f32 {
+    pub fn height(&self) -> f64 {
         self.y_max - self.y_min
     }
 
     /// Returns the largest rectangle that is contained in both `a` and `b`.
     pub fn intersection(a: Rect, b: Rect) -> Option<Rect> {
-        let x_min = f32::max(a.x_min, b.x_min);
-        let y_min = f32::max(a.y_min, b.y_min);
-        let x_max = f32::min(a.x_max, b.x_max);
-        let y_max = f32::min(a.y_max, b.y_max);
+        let x_min = f64::max(a.x_min, b.x_min);
+        let y_min = f64::max(a.y_min, b.y_min);
+        let x_max = f64::min(a.x_max, b.x_max);
+        let y_max = f64::min(a.y_max, b.y_max);
         if x_min < x_max && y_min < y_max {
             Some(Rect {
                 x_min,
@@ -233,10 +233,10 @@ impl Rect {
 
     /// Returns the smallest rectangle that contains both `a` and `b`.
     pub fn bounding_rect(a: Rect, b: Rect) -> Rect {
-        let x_min = f32::min(a.x_min, b.x_min);
-        let y_min = f32::min(a.y_min, b.y_min);
-        let x_max = f32::max(a.x_max, b.x_max);
-        let y_max = f32::max(a.y_max, b.y_max);
+        let x_min = f64::min(a.x_min, b.x_min);
+        let y_min = f64::min(a.y_min, b.y_min);
+        let x_max = f64::max(a.x_max, b.x_max);
+        let y_max = f64::max(a.y_max, b.y_max);
         Rect {
             x_min,
             y_min,
@@ -252,11 +252,11 @@ impl Rect {
         )
     }
 
-    pub fn area(&self) -> f32 {
+    pub fn area(&self) -> f64 {
         (self.x_max - self.x_min) * (self.y_max - self.y_min)
     }
 
-    pub fn diameter(&self) -> f32 {
+    pub fn diameter(&self) -> f64 {
         let dx = self.x_max - self.x_min;
         let dy = self.y_max - self.y_min;
         (dx.powi(2) + dy.powi(2)).sqrt()
@@ -266,16 +266,16 @@ impl Rect {
 impl CollidesWith<Rect> for Rect {
     #[inline(always)]
     fn collides_with(&self, other: &Rect) -> bool {
-        f32::max(self.x_min, other.x_min) <= f32::min(self.x_max, other.x_max)
-            && f32::max(self.y_min, other.y_min) <= f32::min(self.y_max, other.y_max)
+        f64::max(self.x_min, other.x_min) <= f64::min(self.x_max, other.x_max)
+            && f64::max(self.y_min, other.y_min) <= f64::min(self.y_max, other.y_max)
     }
 }
 
 impl AlmostCollidesWith<Rect> for Rect {
     #[inline(always)]
     fn almost_collides_with(&self, other: &Rect) -> bool {
-        FPA(f32::max(self.x_min, other.x_min)) <= FPA(f32::min(self.x_max, other.x_max))
-            && FPA(f32::max(self.y_min, other.y_min)) <= FPA(f32::min(self.y_max, other.y_max))
+        FPA(f64::max(self.x_min, other.x_min)) <= FPA(f64::min(self.x_max, other.x_max))
+            && FPA(f64::max(self.y_min, other.y_min)) <= FPA(f64::min(self.y_max, other.y_max))
     }
 }
 
@@ -346,14 +346,14 @@ impl CollidesWith<Edge> for Rect {
 
 impl DistanceTo<Point> for Rect {
     #[inline(always)]
-    fn distance_to(&self, point: &Point) -> f32 {
+    fn distance_to(&self, point: &Point) -> f64 {
         self.sq_distance_to(point).sqrt()
     }
 
     #[inline(always)]
-    fn sq_distance_to(&self, point: &Point) -> f32 {
+    fn sq_distance_to(&self, point: &Point) -> f64 {
         let Point(x, y) = *point;
-        let mut distance: f32 = 0.0;
+        let mut distance: f64 = 0.0;
         if x < self.x_min {
             distance += (x - self.x_min).powi(2);
         } else if x > self.x_max {
@@ -370,13 +370,13 @@ impl DistanceTo<Point> for Rect {
 
 impl SeparationDistance<Point> for Rect {
     #[inline(always)]
-    fn separation_distance(&self, point: &Point) -> (GeoPosition, f32) {
+    fn separation_distance(&self, point: &Point) -> (GeoPosition, f64) {
         let (position, sq_distance) = self.sq_separation_distance(point);
         (position, sq_distance.sqrt())
     }
 
     #[inline(always)]
-    fn sq_separation_distance(&self, point: &Point) -> (GeoPosition, f32) {
+    fn sq_separation_distance(&self, point: &Point) -> (GeoPosition, f64) {
         match self.collides_with(point) {
             false => (GeoPosition::Exterior, self.sq_distance_to(point)),
             true => {

@@ -31,7 +31,7 @@ pub struct ExtMSPSolution {
     /// Containers used in the solution
     pub containers: Vec<ExtContainer>,
     /// Sum of the area of the produced items divided by the sum of the area of the containers
-    pub density: f32,
+    pub density: f64,
     /// The time it took to generate the solution in seconds
     pub run_time_sec: u64,
 }
@@ -39,7 +39,7 @@ pub struct ExtMSPSolution {
 #[derive(Serialize, Deserialize, Clone)]
 pub struct ExtMSPStrip {
     /// Height of the container
-    pub height: f32,
+    pub height: f64,
     /// Width of the container
-    pub max_width: f32,
+    pub max_width: f64,
 }
