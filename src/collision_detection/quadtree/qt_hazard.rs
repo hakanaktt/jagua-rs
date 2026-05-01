@@ -39,8 +39,7 @@ impl QTHazard {
             hkey,
             entity: haz.entity,
             presence: QTHazPresence::Partial(QTHazPartial::from_entire_shape_with_holes(
-                &haz.shape,
-                &haz.holes,
+                &haz.shape, &haz.holes,
             )),
         }
     }
@@ -147,7 +146,8 @@ impl QTHazard {
                                     let centroid = quadrant.centroid();
                                     let in_outer = haz_shape.collides_with(&centroid);
                                     let haz_holes = &haz_map[self.hkey].holes;
-                                    let in_hole = haz_holes.iter().any(|h| h.collides_with(&centroid));
+                                    let in_hole =
+                                        haz_holes.iter().any(|h| h.collides_with(&centroid));
                                     match self.entity.scope() {
                                         // Interior: forbidden iff inside outer AND not inside any hole.
                                         GeoPosition::Interior if in_outer && !in_hole => {

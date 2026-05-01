@@ -153,9 +153,7 @@ impl SPolygon {
     }
 
     pub fn has_arcs(&self) -> bool {
-        self.bulges
-            .iter()
-            .any(|bulge| bulge.abs() > BULGE_EPSILON)
+        self.bulges.iter().any(|bulge| bulge.abs() > BULGE_EPSILON)
     }
 
     pub fn boundary_points(&self) -> Vec<Point> {
@@ -202,9 +200,9 @@ impl SPolygon {
     }
 
     pub fn generate_boundary_bounding_box(points: &[Point], bulges: &[f32]) -> Result<Rect> {
-        Ok(SPolygon::generate_bounding_box(&boundary_points_from_parts(
-            points, bulges,
-        )?))
+        Ok(SPolygon::generate_bounding_box(
+            &boundary_points_from_parts(points, bulges)?,
+        ))
     }
 
     //https://en.wikipedia.org/wiki/Shoelace_formula
@@ -633,8 +631,8 @@ mod tests {
         let centroid = shape.centroid();
         let semicircle_area = PI / 2.0;
         let semicircle_centroid_y = 2.0 + 4.0 / (3.0 * PI);
-        let expected_centroid_y = (4.0 * 1.0 + semicircle_area * semicircle_centroid_y)
-            / (4.0 + semicircle_area);
+        let expected_centroid_y =
+            (4.0 * 1.0 + semicircle_area * semicircle_centroid_y) / (4.0 + semicircle_area);
         assert_close(centroid.0, 0.0);
         assert_close(centroid.1, expected_centroid_y);
 

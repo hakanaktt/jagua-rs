@@ -1,10 +1,10 @@
+use crate::geometry::DTransformation;
 use crate::geometry::geo_traits::Transformable;
 use crate::geometry::primitives::{Point, Rect, SPolygon};
 use crate::geometry::shape_modification::{
-    close_narrow_concavities, offset_shape, shape_modification_valid, simplify_shape,
-    ShapeModifyConfig, ShapeModifyMode,
+    ShapeModifyConfig, ShapeModifyMode, close_narrow_concavities, offset_shape,
+    shape_modification_valid, simplify_shape,
 };
-use crate::geometry::DTransformation;
 use anyhow::Result;
 use log::warn;
 

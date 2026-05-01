@@ -33,9 +33,11 @@ impl QTHazPartial {
 
     pub fn from_parent(parent: &QTHazPartial, restricted_segments: Vec<BoundarySegment>) -> Self {
         debug_assert!(!restricted_segments.is_empty());
-        debug_assert!(restricted_segments
-            .iter()
-            .all(|segment| parent.segments.contains(segment)));
+        debug_assert!(
+            restricted_segments
+                .iter()
+                .all(|segment| parent.segments.contains(segment))
+        );
         let ff_bbox = {
             //calculate a bounding box around the boundary segments
             if parent.segments.len() == restricted_segments.len() {

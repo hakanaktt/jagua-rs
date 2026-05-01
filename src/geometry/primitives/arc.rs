@@ -48,11 +48,13 @@ impl Arc {
             "invalid arc sweep: {sweep}",
         );
         ensure!(
-            (start.distance_to(&center) - radius).abs() <= DISTANCE_EPSILON.max(radius * DISTANCE_EPSILON),
+            (start.distance_to(&center) - radius).abs()
+                <= DISTANCE_EPSILON.max(radius * DISTANCE_EPSILON),
             "arc start point is not on the circle: {start:?}",
         );
         ensure!(
-            (end.distance_to(&center) - radius).abs() <= DISTANCE_EPSILON.max(radius * DISTANCE_EPSILON),
+            (end.distance_to(&center) - radius).abs()
+                <= DISTANCE_EPSILON.max(radius * DISTANCE_EPSILON),
             "arc end point is not on the circle: {end:?}",
         );
 
@@ -68,7 +70,10 @@ impl Arc {
     }
 
     pub fn try_from_bulge(start: Point, end: Point, bulge: f32) -> Result<Self> {
-        ensure!(bulge.is_finite() && bulge != 0.0, "invalid arc bulge: {bulge}");
+        ensure!(
+            bulge.is_finite() && bulge != 0.0,
+            "invalid arc bulge: {bulge}"
+        );
         ensure!(start != end, "arc endpoints must be distinct: {start:?}");
 
         let chord = Edge::try_new(start, end)?;
@@ -112,11 +117,7 @@ impl Arc {
         cavalier_contours::polyline::PlineVertex<f32>,
     ) {
         (
-            cavalier_contours::polyline::PlineVertex::new(
-                self.start.0,
-                self.start.1,
-                self.bulge(),
-            ),
+            cavalier_contours::polyline::PlineVertex::new(self.start.0, self.start.1, self.bulge()),
             cavalier_contours::polyline::PlineVertex::new(self.end.0, self.end.1, 0.0),
         )
     }
@@ -193,8 +194,16 @@ impl Arc {
             self.push_edge_intersection(edge, -b / (2.0 * a), &mut intersections);
         } else {
             let sqrt_discriminant = discriminant.sqrt();
-            self.push_edge_intersection(edge, (-b - sqrt_discriminant) / (2.0 * a), &mut intersections);
-            self.push_edge_intersection(edge, (-b + sqrt_discriminant) / (2.0 * a), &mut intersections);
+            self.push_edge_intersection(
+                edge,
+                (-b - sqrt_discriminant) / (2.0 * a),
+                &mut intersections,
+            );
+            self.push_edge_intersection(
+                edge,
+                (-b + sqrt_discriminant) / (2.0 * a),
+                &mut intersections,
+            );
         }
         intersections
     }
@@ -223,7 +232,8 @@ impl Transformable for Arc {
         self.center.transform(t);
         self.start.transform(t);
         self.end.transform(t);
-        self.bbox = calculate_bounding_box(self.center, self.radius, self.start, self.end, self.sweep);
+        self.bbox =
+            calculate_bounding_box(self.center, self.radius, self.start, self.end, self.sweep);
         self
     }
 }
@@ -235,7 +245,8 @@ impl TransformableFrom for Arc {
         self.end.transform_from(&reference.end, t);
         self.radius = reference.radius;
         self.sweep = reference.sweep;
-        self.bbox = calculate_bounding_box(self.center, self.radius, self.start, self.end, self.sweep);
+        self.bbox =
+            calculate_bounding_box(self.center, self.radius, self.start, self.end, self.sweep);
         self
     }
 }
@@ -368,7 +379,13 @@ impl SeparationDistance<Point> for Arc {
     }
 }
 
-fn calculate_bounding_box(center: Point, radius: f32, start: Point, end: Point, sweep: f32) -> Rect {
+fn calculate_bounding_box(
+    center: Point,
+    radius: f32,
+    start: Point,
+    end: Point,
+    sweep: f32,
+) -> Rect {
     let mut points = vec![start, end];
     for angle in [0.0, FRAC_PI_2, PI, 3.0 * FRAC_PI_2] {
         if angle_in_sweep(angle, angle_of(center, start), sweep) {
@@ -398,7 +415,10 @@ fn calculate_bounding_box(center: Point, radius: f32, start: Point, end: Point, 
 }
 
 fn point_on_circle(center: Point, radius: f32, angle: f32) -> Point {
-    Point(center.0 + radius * angle.cos(), center.1 + radius * angle.sin())
+    Point(
+        center.0 + radius * angle.cos(),
+        center.1 + radius * angle.sin(),
+    )
 }
 
 fn angle_of(center: Point, point: Point) -> f32 {

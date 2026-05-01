@@ -5,7 +5,9 @@ use std::cmp::Ordering;
 
 /// Common trait for all geometric primitives that can be directly queried in the quadtree
 /// for collisions with the boundary segments of the registered hazards. These include: [Rect], [Edge], [BoundarySegment] and [Circle].
-pub trait QTQueryable: CollidesWith<Edge> + CollidesWith<BoundarySegment> + CollidesWith<Rect> {
+pub trait QTQueryable:
+    CollidesWith<Edge> + CollidesWith<BoundarySegment> + CollidesWith<Rect>
+{
     /// Checks
     fn collides_with_quadrants(&self, _r: &Rect, qs: [&Rect; 4]) -> [bool; 4] {
         debug_assert!(_r.quadrants().iter().zip(qs.iter()).all(|(q, r)| *q == **r));

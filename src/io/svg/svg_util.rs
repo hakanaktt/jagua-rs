@@ -2,8 +2,8 @@ use crate::collision_detection::hazards::filter::HazardFilter;
 use crate::collision_detection::quadtree::{QTHazPresence, QTNode};
 use crate::entities::N_QUALITIES;
 use crate::geometry;
-use crate::geometry::primitives::{BoundarySegment, Edge, Point, SPolygon};
 use crate::geometry::OriginalShape;
+use crate::geometry::primitives::{BoundarySegment, Edge, Point, SPolygon};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::f32::consts::PI;
 use std::fmt::{Display, Formatter};
@@ -295,9 +295,10 @@ mod tests {
     fn simple_polygon_data_emits_svg_arc_commands_for_bulges() {
         let data = simple_polygon_data(&rounded_top_shape());
 
-        assert!(data
-            .iter()
-            .any(|command| matches!(command, Command::EllipticalArc(..))));
+        assert!(
+            data.iter()
+                .any(|command| matches!(command, Command::EllipticalArc(..)))
+        );
     }
 
     #[test]
@@ -305,9 +306,11 @@ mod tests {
         let shape = SPolygon::from(Rect::try_new(0.0, 0.0, 1.0, 1.0).unwrap());
         let data = simple_polygon_data(&shape);
 
-        assert!(!data
-            .iter()
-            .any(|command| matches!(command, Command::EllipticalArc(..))));
+        assert!(
+            !data
+                .iter()
+                .any(|command| matches!(command, Command::EllipticalArc(..)))
+        );
     }
 }
 

@@ -169,22 +169,23 @@ pub fn layout_to_svg_group(
                 None => theme.item_fill.to_owned(),
                 Some(q) => svg_util::blend_colors(theme.item_fill, theme.qz_fill[q]),
             };
-            let mut item_group = Group::new().set("id", format!("item_{}", item.id)).add(
-                svg_util::data_to_path(
-                    svg_util::original_shape_data(
-                        &item.shape_orig,
-                        &item.shape_cd,
-                        options.draw_cd_shapes,
-                    ),
-                    &[
-                        ("fill", &*format!("{color}")),
-                        ("stroke-width", &*format!("{stroke_width}")),
-                        ("fill-rule", "nonzero"),
-                        ("stroke", "black"),
-                        ("fill-opacity", "0.5"),
-                    ],
-                ),
-            );
+            let mut item_group =
+                Group::new()
+                    .set("id", format!("item_{}", item.id))
+                    .add(svg_util::data_to_path(
+                        svg_util::original_shape_data(
+                            &item.shape_orig,
+                            &item.shape_cd,
+                            options.draw_cd_shapes,
+                        ),
+                        &[
+                            ("fill", &*format!("{color}")),
+                            ("stroke-width", &*format!("{stroke_width}")),
+                            ("fill-rule", "nonzero"),
+                            ("stroke", "black"),
+                            ("fill-opacity", "0.5"),
+                        ],
+                    ));
 
             // Holes (Phase A): paint each inner ring with the hole_fill color on top of the
             // item body so they read as cut-outs in the SVG. CD does not yet treat them as
@@ -379,9 +380,11 @@ pub fn layout_to_svg_group(
                 let collector = {
                     let mut collector =
                         BasicHazardCollector::with_capacity(layout.cde().hazards_map.len());
-                    layout
-                        .cde()
-                        .collect_poly_collisions_with_holes(&pi.shape, &pi.holes, &mut collector);
+                    layout.cde().collect_poly_collisions_with_holes(
+                        &pi.shape,
+                        &pi.holes,
+                        &mut collector,
+                    );
                     collector.retain(|_, entity| {
                         // filter out the item itself
                         if let HazardEntity::PlacedItem {

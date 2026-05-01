@@ -11,7 +11,7 @@ use crate::geometry::primitives::SPolygon;
 
 use crate::io::ext_repr::ExtSPolygon;
 use crate::io::import;
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 
 #[cfg(feature = "curves")]
 use cavalier_contours::polyline::{PlineSource, Polyline};

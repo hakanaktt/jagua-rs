@@ -176,10 +176,12 @@ mod tests {
         let shape = rounded_top_shape();
         let surrogate = SPSurrogate::new(&shape, SPSurrogateConfig::none()).unwrap();
 
-        assert!(surrogate
-            .convex_hull_points
-            .iter()
-            .any(|point| point.0.abs() < 1.0e-3 && (point.1 - 3.0).abs() < 1.0e-3));
+        assert!(
+            surrogate
+                .convex_hull_points
+                .iter()
+                .any(|point| point.0.abs() < 1.0e-3 && (point.1 - 3.0).abs() < 1.0e-3)
+        );
         assert!(surrogate.convex_hull_area >= shape.area);
         assert!(surrogate.convex_hull_area > 4.0 + PI / 2.0 - 1.0e-3);
     }
