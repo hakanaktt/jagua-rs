@@ -27,6 +27,7 @@ rayon = { workspace = true }
 geo-types = { workspace = true }
 geo-buffer = { workspace = true }
 web-time = { workspace = true }
+cavalier_contours = { version = "0.7", optional = true }
 
 [features]
 ## Enables support for the Strip Packing Problem
@@ -35,6 +36,8 @@ spp = []
 bpp = []
 ## Enables support for the Multi Strip Packing Problem
 mspp = []
+## Enables native curved-boundary support via bulged polylines
+curves = ["dep:cavalier_contours"]
 
 [package.metadata.docs.rs]
 all-features = true
